@@ -1,0 +1,27 @@
+plugins {
+    id "base"
+}
+
+tasks.register("npmInstall", Exec) {
+    group = "build"
+    description = "Installs frontend dependencies."
+    commandLine "npm", "install"
+}
+
+tasks.register("test", Exec) {
+    group = "verification"
+    description = "Runs frontend tests."
+    dependsOn("npmInstall")
+    commandLine "npm", "test", "--", "--run"
+}
+
+tasks.register("buildFrontend", Exec) {
+    group = "build"
+    description = "Builds the frontend."
+    dependsOn("npmInstall")
+    commandLine "npm", "run", "build"
+}
+
+tasks.named("build") {
+    dependsOn("buildFrontend")
+}

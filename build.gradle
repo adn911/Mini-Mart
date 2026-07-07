@@ -1,0 +1,9 @@
+plugins {
+    id "base"
+}
+
+tasks.register("checkAll") {
+    group = "verification"
+    description = "Runs all project checks."
+    dependsOn(":backend:test", ":frontend:test")
+}
