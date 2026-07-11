@@ -1,6 +1,7 @@
 export type Category = {
   id: number;
   name: string;
+  status?: string;
 };
 
 export type Product = {
@@ -141,6 +142,21 @@ export async function refillProduct(id: number, quantity: number): Promise<Produ
   return response.json() as Promise<Product>;
 }
 
+export async function uploadProductImage(id: number, file: File): Promise<{ imageUrl: string }> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await authFetch(`/api/admin/products/${id}/image`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!response.ok) {
+    const body = await response.json() as { error: string };
+    throw new Error(body.error);
+  }
+  return response.json() as Promise<{ imageUrl: string }>;
+}
+
 export async function getAdminCategories(includeDeleted?: boolean): Promise<Category[]> {
   const url = includeDeleted ? "/api/admin/categories?includeDeleted=true" : "/api/admin/categories";
   const response = await authFetch(url);
@@ -208,6 +224,7 @@ export type CartItem = {
 export type CartResponse = {
   items: CartItem[];
   itemCount: number;
+  expired?: boolean;
 };
 
 export async function getCart(): Promise<CartResponse> {
@@ -245,4 +262,45 @@ export async function updateCartItem(itemId: number, quantity: number): Promise<
 export async function removeCartItem(itemId: number): Promise<void> {
   const response = await fetch(`/api/cart/items/${itemId}`, { method: "DELETE" });
   if (!response.ok) throw new Error("Failed to remove item");
+}
+
+export type OrderItemResponse = {
+  id: number;
+  product: Product;
+  quantity: number;
+  unitPrice: number;
+};
+
+export type OrderResponse = {
+  id: number;
+  sessionId?: string;
+  items: OrderItemResponse[];
+  total: number;
+  status: string;
+  paymentMethod?: string;
+  createdAt: string;
+};
+
+export async function checkoutCart(paymentMethod?: string): Promise<OrderResponse> {
+  const response = await fetch("/api/cart/checkout", {
+    method: "POST",
+    headers: paymentMethod ? { "Content-Type": "application/json" } : undefined,
+    body: paymentMethod ? JSON.stringify({ paymentMethod }) : undefined,
+  });
+  if (!response.ok) {
+    const body = await response.json() as { error: string };
+    throw new Error(body.error);
+  }
+  return response.json() as Promise<OrderResponse>;
+}
+
+export async function getAdminOrders(search?: string, status?: string): Promise<OrderResponse[]> {
+  const params = new URLSearchParams();
+  if (search) params.set("search", search);
+  if (status) params.set("status", status);
+  const query = params.toString();
+  const url = query ? `/api/admin/orders?${query}` : "/api/admin/orders";
+  const response = await authFetch(url);
+  if (!response.ok) throw new Error("Failed to fetch orders");
+  return response.json() as Promise<OrderResponse[]>;
 }

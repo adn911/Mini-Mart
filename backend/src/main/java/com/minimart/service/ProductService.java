@@ -70,7 +70,7 @@ public class ProductService {
             existing.setCategory(cat);
         }
         if (update.getImageUrl() != null) existing.setImageUrl(update.getImageUrl());
-        if (update.getStockQuantity() >= 0) existing.setStockQuantity(update.getStockQuantity());
+        if (update.isStockQuantityPresent()) existing.setStockQuantity(update.getStockQuantity());
 
         return productRepository.save(existing);
     }
@@ -82,6 +82,15 @@ public class ProductService {
         product.setStatus(EntityStatus.DELETED);
         productRepository.save(product);
         return true;
+    }
+
+    @Transactional
+    public void updateProductImageUrl(Long id, String imageUrl) {
+        Product existing = productRepository.findById(id).orElse(null);
+        if (existing != null) {
+            existing.setImageUrl(imageUrl);
+            productRepository.save(existing);
+        }
     }
 
     @Transactional

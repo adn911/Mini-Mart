@@ -10,6 +10,7 @@ import com.minimart.entity.Product;
 import com.minimart.repository.CartItemRepository;
 import com.minimart.repository.CartRepository;
 import com.minimart.repository.CategoryRepository;
+import com.minimart.repository.CustomerOrderRepository;
 import com.minimart.repository.ProductRepository;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +34,9 @@ class PublicCatalogTest {
     private CategoryRepository categoryRepository;
 
     @Autowired
+    private CustomerOrderRepository customerOrderRepository;
+
+    @Autowired
     private CartItemRepository cartItemRepository;
 
     @Autowired
@@ -40,6 +44,7 @@ class PublicCatalogTest {
 
     @BeforeEach
     void setUp() {
+        customerOrderRepository.deleteAll();
         cartItemRepository.deleteAll();
         cartRepository.deleteAll();
         productRepository.deleteAll();

@@ -16,8 +16,14 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
 
 app:
   jwt:
     secret: "mini-mart-jwt-secret-key-that-is-long-enough-for-hmac-sha256-2024"
     expiration-ms: 86400000
+  upload:
+    path: uploads/products

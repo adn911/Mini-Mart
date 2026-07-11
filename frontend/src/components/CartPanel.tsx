@@ -1,4 +1,4 @@
-import { type CartItem } from "../api";
+import { type CartItem, type OrderResponse } from "../api";
 
 type CartPanelProps = {
   items: CartItem[];
@@ -7,6 +7,10 @@ type CartPanelProps = {
   onClose: () => void;
   onUpdateQuantity: (itemId: number, quantity: number) => void;
   onRemoveItem: (itemId: number) => void;
+  onCheckout: () => void;
+  checkingOut: boolean;
+  placedOrder: OrderResponse | null;
+  expired: boolean;
   error?: string;
 };
 
@@ -17,8 +21,13 @@ export default function CartPanel({
   onClose,
   onUpdateQuantity,
   onRemoveItem,
+  onCheckout,
+  checkingOut,
+  placedOrder,
+  expired,
   error,
 }: CartPanelProps) {
+  if (placedOrder) return null;
   const total = items.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
     0,
@@ -34,7 +43,7 @@ export default function CartPanel({
       )}
 
       <div
-        className={`fixed right-0 top-0 z-50 flex h-full w-80 flex-col border-l border-slate-200 bg-white shadow-lg transition-transform duration-300 ${
+        className={`fixed right-0 top-0 z-50 flex h-full w-[32rem] flex-col border-l border-slate-200 bg-white shadow-lg transition-transform duration-300 ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -50,7 +59,12 @@ export default function CartPanel({
           </button>
         </div>
 
-        {error && (
+        {expired && (
+          <div className="mx-4 mt-2 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+            Your cart has expired. Items have been returned to stock.
+          </div>
+        )}
+        {error && !expired && (
           <div className="mx-4 mt-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
             {error}
           </div>
@@ -113,12 +127,18 @@ export default function CartPanel({
           )}
         </div>
 
-        <div className="border-t border-slate-200 px-4 py-3">
-          <div className="flex items-center justify-between text-sm font-semibold text-slate-900">
-            <span>Total</span>
-            <span>${total.toFixed(2)}</span>
+        {!expired && items.length > 0 && (
+          <div className="border-t border-slate-200 px-4 py-3 space-y-3">
+            <div className="flex items-center justify-between text-sm font-semibold text-slate-900">
+              <span>Total</span>
+              <span>${total.toFixed(2)}</span>
+            </div>
+            <button onClick={onCheckout} disabled={checkingOut}
+              className="w-full bg-slate-900 py-2.5 text-xs font-medium uppercase tracking-wider text-white transition-opacity hover:opacity-90 disabled:opacity-50">
+              {checkingOut ? "Processing..." : "Checkout"}
+            </button>
           </div>
-        </div>
+        )}
       </div>
     </>
   );

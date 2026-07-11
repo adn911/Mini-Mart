@@ -1,9 +1,9 @@
 package com.minimart.controller;
 
 import com.minimart.entity.CartItem;
+import com.minimart.entity.CustomerOrder;
 import com.minimart.service.CartService;
 import jakarta.servlet.http.HttpSession;
-import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,12 +27,13 @@ class CartController {
     @GetMapping("/api/cart")
     ResponseEntity<?> getCart(HttpSession session) {
         String sessionId = session.getId();
-        List<CartItem> items = cartService.getCartItems(sessionId);
+        var result = cartService.getCartItems(sessionId);
 
-        int itemCount = items.stream().mapToInt(CartItem::getQuantity).sum();
+        int itemCount = result.items().stream().mapToInt(i -> i.getQuantity()).sum();
         return ResponseEntity.ok(Map.of(
-            "items", items,
-            "itemCount", itemCount
+            "items", result.items(),
+            "itemCount", itemCount,
+            "expired", result.expired()
         ));
     }
 
@@ -67,5 +68,16 @@ class CartController {
     ResponseEntity<?> removeItem(HttpSession session, @PathVariable Long itemId) {
         cartService.removeItem(session.getId(), itemId);
         return ResponseEntity.ok(Map.of("status", "removed"));
+    }
+
+    @PostMapping("/api/cart/checkout")
+    ResponseEntity<?> checkout(HttpSession session, @RequestBody(required = false) Map<String, Object> body) {
+        try {
+            String paymentMethod = body != null ? (String) body.get("paymentMethod") : null;
+            CustomerOrder order = cartService.checkout(session.getId(), paymentMethod);
+            return ResponseEntity.ok(order);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }

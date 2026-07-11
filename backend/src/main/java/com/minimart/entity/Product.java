@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import java.math.BigDecimal;
@@ -26,7 +27,7 @@ public class Product {
 
     private BigDecimal price;
 
-    private int stockQuantity;
+    private Integer stockQuantity;
 
     private int reservedQuantity;
 
@@ -53,8 +54,10 @@ public class Product {
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
 
-    public int getStockQuantity() { return stockQuantity; }
-    public void setStockQuantity(int stockQuantity) { this.stockQuantity = stockQuantity; }
+    public int getStockQuantity() { return stockQuantity != null ? stockQuantity : 0; }
+    public void setStockQuantity(Integer stockQuantity) { this.stockQuantity = stockQuantity; }
+    @JsonIgnore
+    public boolean isStockQuantityPresent() { return stockQuantity != null; }
 
     public int getReservedQuantity() { return reservedQuantity; }
     public void setReservedQuantity(int reservedQuantity) { this.reservedQuantity = reservedQuantity; }

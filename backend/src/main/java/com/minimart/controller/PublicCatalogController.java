@@ -6,6 +6,7 @@ import com.minimart.service.ProductService;
 import java.util.List;
 import java.util.Map;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,7 +42,7 @@ class PublicCatalogController {
     ResponseEntity<?> getProduct(@PathVariable Long id) {
         Product product = productService.getProductById(id);
         if (product == null || product.getStatus() != com.minimart.entity.EntityStatus.ACTIVE) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Not found"));
         }
         return ResponseEntity.ok(product);
     }

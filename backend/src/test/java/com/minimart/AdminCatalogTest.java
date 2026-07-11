@@ -14,6 +14,7 @@ import com.minimart.entity.Product;
 import com.minimart.repository.CartItemRepository;
 import com.minimart.repository.CartRepository;
 import com.minimart.repository.CategoryRepository;
+import com.minimart.repository.CustomerOrderRepository;
 import com.minimart.repository.ProductRepository;
 import java.math.BigDecimal;
 import java.util.Map;
@@ -42,6 +43,9 @@ class AdminCatalogTest {
     private CategoryRepository categoryRepository;
 
     @Autowired
+    private CustomerOrderRepository customerOrderRepository;
+
+    @Autowired
     private CartItemRepository cartItemRepository;
 
     @Autowired
@@ -51,6 +55,7 @@ class AdminCatalogTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        customerOrderRepository.deleteAll();
         cartItemRepository.deleteAll();
         cartRepository.deleteAll();
         productRepository.deleteAll();

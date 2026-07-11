@@ -18,7 +18,7 @@ const sparklingWater = {
   stockQuantity: 100,
   reservedQuantity: 0,
   availableQuantity: 100,
-  imageUrl: "https://picsum.photos/seed/beverage1/400/400",
+  imageUrl: "https://picsum.photos/seed/sparkling-water/400/400",
   status: "ACTIVE",
   category: beverages,
 };
@@ -31,7 +31,7 @@ const darkChocolate = {
   stockQuantity: 3,
   reservedQuantity: 0,
   availableQuantity: 3,
-  imageUrl: "https://picsum.photos/seed/snack2/400/400",
+  imageUrl: "https://picsum.photos/seed/dark-chocolate/400/400",
   status: "ACTIVE",
   category: snacks,
 };
@@ -44,7 +44,7 @@ const chips = {
   stockQuantity: 50,
   reservedQuantity: 0,
   availableQuantity: 50,
-  imageUrl: "https://picsum.photos/seed/snack4/400/400",
+  imageUrl: "https://picsum.photos/seed/chips/400/400",
   status: "ACTIVE",
   category: snacks,
 };
@@ -71,14 +71,19 @@ function paginated(products: typeof allProducts) {
 let cartItems: Array<{ id: number; product: typeof sparklingWater; quantity: number }>;
 let nextItemId: number;
 let addToCartFails: boolean;
+let checkoutFails: boolean;
+let cartExpired: boolean;
 let productsPerPage = 12;
 
 describe("Mini-Mart storefront", () => {
   beforeEach(() => {
     localStorage.clear();
+    window.history.pushState({}, "", "/");
     cartItems = [];
     nextItemId = 1;
     addToCartFails = false;
+    checkoutFails = false;
+    cartExpired = false;
     productsPerPage = 12;
 
     vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -88,6 +93,11 @@ describe("Mini-Mart storefront", () => {
       }
       if (url.includes("/api/admin/me")) {
         return Promise.resolve(jsonResponse({ username: "admin" }));
+      }
+      if (url.includes("/api/admin/products/") && url.endsWith("/image") && init?.method === "POST") {
+        const match = url.match(/\/api\/admin\/products\/(\d+)\/image/);
+        const productId = match ? parseInt(match[1]) : 1;
+        return Promise.resolve(jsonResponse({ imageUrl: "/uploads/product-" + productId + "-test.jpg" }));
       }
       if (url.includes("/api/admin/products")) {
         return Promise.resolve(jsonResponse(allProducts));
@@ -99,9 +109,17 @@ describe("Mini-Mart storefront", () => {
         return Promise.resolve(jsonResponse(mockCategories));
       }
       if (url === "/api/cart") {
+        if (cartExpired) {
+          return Promise.resolve(jsonResponse({
+            items: cartItems,
+            itemCount: cartItems.reduce((s, i) => s + i.quantity, 0),
+            expired: true,
+          }));
+        }
         return Promise.resolve(jsonResponse({
           items: cartItems,
           itemCount: cartItems.reduce((s, i) => s + i.quantity, 0),
+          expired: false,
         }));
       }
       if (url.includes("/api/cart/items") && (!init || init.method === "POST")) {
@@ -144,6 +162,29 @@ describe("Mini-Mart storefront", () => {
           if (idx !== -1) cartItems.splice(idx, 1);
         }
         return Promise.resolve(jsonResponse({ status: "removed" }));
+      }
+      if (url.includes("/api/cart/checkout") && init?.method === "POST") {
+        if (checkoutFails) {
+          return Promise.resolve(jsonResponse({ error: "Cart is empty" }, 400));
+        }
+        if (cartItems.length === 0) {
+          return Promise.resolve(jsonResponse({ error: "Cart is empty" }, 400));
+        }
+        const orderItems = cartItems.map((ci) => ({
+          id: ci.id,
+          product: ci.product,
+          quantity: ci.quantity,
+          unitPrice: ci.product.price,
+        }));
+        const total = orderItems.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
+        cartItems = [];
+        return Promise.resolve(jsonResponse({
+          id: 1,
+          items: orderItems,
+          total,
+          status: "PLACED",
+          createdAt: new Date().toISOString(),
+        }));
       }
       if (url.includes("categoryId=1")) {
         return Promise.resolve(jsonResponse(paginated([sparklingWater])));
@@ -297,5 +338,80 @@ describe("Mini-Mart storefront", () => {
     render(<App />);
 
     expect(await screen.findByText("Low")).toBeInTheDocument();
+  });
+
+  test("admin product table shows image thumbnails", async () => {
+    localStorage.setItem("mini-mart-admin-token", "test-token");
+    window.history.pushState({}, "", "/admin");
+    render(<App />);
+
+    await screen.findByText("Sparkling Water");
+    const imgs = screen.getAllByRole("img");
+    expect(imgs.length).toBeGreaterThan(0);
+    expect(imgs[0]).toHaveAttribute("src", sparklingWater.imageUrl);
+  });
+
+  test("admin edit form shows image upload for existing product", async () => {
+    localStorage.setItem("mini-mart-admin-token", "test-token");
+    window.history.pushState({}, "", "/admin");
+    render(<App />);
+
+    await screen.findByText("Sparkling Water");
+    await userEvent.click(screen.getAllByText("Edit")[0]);
+
+    expect(screen.getByText("Edit Product")).toBeInTheDocument();
+    expect(screen.getByText("Choose file")).toBeInTheDocument();
+    expect(screen.getByAltText("Sparkling Water")).toBeInTheDocument();
+  });
+
+  test("shows checkout button when cart has items", async () => {
+    render(<App />);
+    await screen.findByText("Sparkling Water");
+
+    const addButtons = screen.getAllByRole("button", { name: "Add to cart" });
+    await userEvent.click(addButtons[0]);
+
+    await screen.findByText("$4.99 each");
+    expect(screen.getByText("Checkout")).toBeInTheDocument();
+  });
+
+  test("successful checkout shows order confirmation", async () => {
+    render(<App />);
+    await screen.findByText("Sparkling Water");
+
+    const addButtons = screen.getAllByRole("button", { name: "Add to cart" });
+    await userEvent.click(addButtons[0]);
+    await screen.findByText("$4.99 each");
+
+    await userEvent.click(screen.getByText("Checkout"));
+
+    expect(await screen.findByText("Order Confirmed")).toBeInTheDocument();
+    expect(screen.getByText(/Order #1/)).toBeInTheDocument();
+    expect(screen.getByText("Cash on Delivery")).toBeInTheDocument();
+    expect(screen.getByText("Continue Shopping")).toBeInTheDocument();
+  });
+
+  test("failed checkout shows error message", async () => {
+    checkoutFails = true;
+    render(<App />);
+    await screen.findByText("Sparkling Water");
+
+    const addButtons = screen.getAllByRole("button", { name: "Add to cart" });
+    await userEvent.click(addButtons[0]);
+    await screen.findByText("$4.99 each");
+
+    await userEvent.click(screen.getByText("Checkout"));
+
+    expect(await screen.findByText("Cart is empty")).toBeInTheDocument();
+  });
+
+  test("expired cart shows expired message", async () => {
+    cartExpired = true;
+    render(<App />);
+    await screen.findByText("Mini-Mart");
+
+    await userEvent.click(screen.getByText("Cart"));
+
+    expect(await screen.findByText("Your cart has expired. Items have been returned to stock.")).toBeInTheDocument();
   });
 });

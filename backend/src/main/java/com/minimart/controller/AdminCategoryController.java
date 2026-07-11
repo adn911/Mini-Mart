@@ -40,7 +40,7 @@ class AdminCategoryController {
     ResponseEntity<?> updateCategory(@PathVariable Long id, @RequestBody Category category) {
         Category updated = categoryService.updateCategory(id, category);
         if (updated == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Not found"));
         }
         return ResponseEntity.ok(updated);
     }
@@ -50,6 +50,6 @@ class AdminCategoryController {
         if (categoryService.softDeleteCategory(id)) {
             return ResponseEntity.ok(Map.of("status", "deleted"));
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Not found"));
     }
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import {
+  checkoutCart,
   getCart,
   addCartItem,
   updateCartItem,
@@ -11,12 +12,14 @@ import {
   type CartItem,
   type CartResponse,
   type Category,
+  type OrderResponse,
   type PageResponse,
   type Product,
 } from "./api";
 import AdminConsole from "./components/AdminConsole";
 import AdminLogin from "./components/AdminLogin";
 import CartPanel from "./components/CartPanel";
+import OrderConfirmation from "./components/OrderConfirmation";
 import ProductCard from "./components/ProductCard";
 import "./styles.css";
 
@@ -52,11 +55,17 @@ function Storefront() {
   const [cartOpen, setCartOpen] = useState(false);
   const [cart, setCart] = useState<CartResponse>({ items: [], itemCount: 0 });
   const [cartError, setCartError] = useState<string | undefined>();
+  const [checkingOut, setCheckingOut] = useState(false);
+  const [placedOrder, setPlacedOrder] = useState<OrderResponse | null>(null);
+  const [cartExpired, setCartExpired] = useState(false);
 
   function refreshCart() {
     getCart()
-      .then(setCart)
-      .catch(() => setCart({ items: [], itemCount: 0 }));
+      .then((res) => {
+        setCart(res);
+        setCartExpired(res.expired ?? false);
+      })
+      .catch(() => { setCart({ items: [], itemCount: 0 }); setCartExpired(false); });
   }
 
   useEffect(() => {
@@ -108,6 +117,38 @@ function Storefront() {
       .catch((err: Error) => setCartError(err.message));
   }
 
+  function handleCheckout() {
+    setCartError(undefined);
+    setCheckingOut(true);
+    setCartOpen(false);
+    checkoutCart("CASH_ON_DELIVERY")
+      .then((order) => {
+        setPlacedOrder(order);
+        setCart({ items: [], itemCount: 0 });
+      })
+      .catch((err: Error) => setCartError(err.message))
+      .finally(() => setCheckingOut(false));
+  }
+
+  function handleContinueShopping() {
+    setPlacedOrder(null);
+    setCartOpen(false);
+    refreshCart();
+  }
+
+  if (placedOrder) {
+    return (
+      <div className="min-h-screen bg-white text-slate-900">
+        <header className="border-b border-slate-200">
+          <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+            <h1 className="text-xl font-semibold tracking-tight">Mini-Mart</h1>
+          </div>
+        </header>
+        <OrderConfirmation order={placedOrder} onContinueShopping={handleContinueShopping} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <header className="border-b border-slate-200">
@@ -115,7 +156,7 @@ function Storefront() {
           <h1 className="text-xl font-semibold tracking-tight">Mini-Mart</h1>
           <div className="flex items-center gap-4">
             <button
-              onClick={() => { setCartError(undefined); setCartOpen(true); }}
+              onClick={() => { setCartError(undefined); refreshCart(); setCartOpen(true); }}
               className="relative text-xs font-medium uppercase tracking-wider text-slate-500 transition-colors hover:text-slate-900"
             >
               Cart
@@ -238,9 +279,13 @@ function Storefront() {
         items={cart.items}
         itemCount={cart.itemCount}
         open={cartOpen}
-        onClose={() => setCartOpen(false)}
+        onClose={() => { setCartOpen(false); }}
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveItem}
+        onCheckout={handleCheckout}
+        checkingOut={checkingOut}
+        placedOrder={placedOrder}
+        expired={cartExpired}
         error={cartError}
       />
     </div>
