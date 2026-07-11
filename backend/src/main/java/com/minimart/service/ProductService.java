@@ -6,6 +6,9 @@ import com.minimart.entity.Product;
 import com.minimart.repository.CategoryRepository;
 import com.minimart.repository.ProductRepository;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,10 +24,12 @@ public class ProductService {
         this.categoryRepository = categoryRepository;
     }
 
-    public List<Product> getActiveProducts(String search, Long categoryId) {
+    public Page<Product> getActiveProducts(String search, Long categoryId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
         return productRepository.findActiveProducts(
             search != null && !search.isBlank() ? search : null,
-            categoryId
+            categoryId,
+            pageable
         );
     }
 

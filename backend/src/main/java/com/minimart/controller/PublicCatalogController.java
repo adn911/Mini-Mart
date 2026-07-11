@@ -4,6 +4,8 @@ import com.minimart.entity.Category;
 import com.minimart.entity.Product;
 import com.minimart.service.ProductService;
 import java.util.List;
+import java.util.Map;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,10 +22,19 @@ class PublicCatalogController {
     }
 
     @GetMapping("/api/products")
-    List<Product> getProducts(
+    ResponseEntity<?> getProducts(
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) Long categoryId) {
-        return productService.getActiveProducts(search, categoryId);
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        Page<Product> result = productService.getActiveProducts(search, categoryId, page, size);
+        return ResponseEntity.ok(Map.of(
+            "content", result.getContent(),
+            "page", result.getNumber(),
+            "size", result.getSize(),
+            "totalPages", result.getTotalPages(),
+            "totalElements", result.getTotalElements()
+        ));
     }
 
     @GetMapping("/api/products/{id}")

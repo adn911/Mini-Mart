@@ -79,8 +79,10 @@ class PublicCatalogTest {
 
         mockMvc.perform(get("/api/products"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.length()").value(1))
-            .andExpect(jsonPath("$[0].name").value("Cola"));
+            .andExpect(jsonPath("$.content.length()").value(1))
+            .andExpect(jsonPath("$.content[0].name").value("Cola"))
+            .andExpect(jsonPath("$.page").value(0))
+            .andExpect(jsonPath("$.totalPages").value(1));
     }
 
     @Test
@@ -96,7 +98,7 @@ class PublicCatalogTest {
 
         mockMvc.perform(get("/api/products"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.length()").value(0));
+            .andExpect(jsonPath("$.content.length()").value(0));
     }
 
     @Test
@@ -112,8 +114,8 @@ class PublicCatalogTest {
 
         mockMvc.perform(get("/api/products?search=fizzy"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.length()").value(1))
-            .andExpect(jsonPath("$[0].name").value("Cola"));
+            .andExpect(jsonPath("$.content.length()").value(1))
+            .andExpect(jsonPath("$.content[0].name").value("Cola"));
     }
 
     @Test
@@ -137,8 +139,8 @@ class PublicCatalogTest {
 
         mockMvc.perform(get("/api/products?categoryId=" + snacks.getId()))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.length()").value(1))
-            .andExpect(jsonPath("$[0].name").value("Chips"));
+            .andExpect(jsonPath("$.content.length()").value(1))
+            .andExpect(jsonPath("$.content[0].name").value("Chips"));
     }
 
     @Test
@@ -154,8 +156,8 @@ class PublicCatalogTest {
 
         mockMvc.perform(get("/api/products"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].availableQuantity").value(45))
-            .andExpect(jsonPath("$[0].stockQuantity").value(50))
-            .andExpect(jsonPath("$[0].reservedQuantity").value(5));
+            .andExpect(jsonPath("$.content[0].availableQuantity").value(45))
+            .andExpect(jsonPath("$.content[0].stockQuantity").value(50))
+            .andExpect(jsonPath("$.content[0].reservedQuantity").value(5));
     }
 }

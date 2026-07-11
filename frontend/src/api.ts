@@ -173,13 +173,22 @@ export async function deleteCategory(id: number): Promise<void> {
   if (!response.ok) throw new Error("Failed to delete category");
 }
 
-export async function getProducts(search?: string, categoryId?: number): Promise<Product[]> {
+export type PageResponse = {
+  content: Product[];
+  page: number;
+  size: number;
+  totalPages: number;
+  totalElements: number;
+};
+
+export async function getProducts(search?: string, categoryId?: number, page = 0, size = 12): Promise<PageResponse> {
   const params = new URLSearchParams();
   if (search) params.set("search", search);
   if (categoryId) params.set("categoryId", String(categoryId));
+  params.set("page", String(page));
+  params.set("size", String(size));
 
-  const query = params.toString();
-  const url = query ? `/api/products?${query}` : "/api/products";
+  const url = `/api/products?${params.toString()}`;
 
   const response = await fetch(url);
 
@@ -187,7 +196,7 @@ export async function getProducts(search?: string, categoryId?: number): Promise
     throw new Error("Unable to fetch products");
   }
 
-  return response.json() as Promise<Product[]>;
+  return response.json() as Promise<PageResponse>;
 }
 
 export type CartItem = {

@@ -11,6 +11,7 @@ import {
   type CartItem,
   type CartResponse,
   type Category,
+  type PageResponse,
   type Product,
 } from "./api";
 import AdminConsole from "./components/AdminConsole";
@@ -46,6 +47,8 @@ function Storefront() {
   const [search, setSearch] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>();
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [cartOpen, setCartOpen] = useState(false);
   const [cart, setCart] = useState<CartResponse>({ items: [], itemCount: 0 });
   const [cartError, setCartError] = useState<string | undefined>();
@@ -68,11 +71,14 @@ function Storefront() {
 
   useEffect(() => {
     setLoading(true);
-    getProducts(search, selectedCategoryId)
-      .then(setProducts)
-      .catch(() => setProducts([]))
+    getProducts(search, selectedCategoryId, page)
+      .then((res: PageResponse) => {
+        setProducts(res.content);
+        setTotalPages(res.totalPages);
+      })
+      .catch(() => { setProducts([]); setTotalPages(0); })
       .finally(() => setLoading(false));
-  }, [search, selectedCategoryId]);
+  }, [search, selectedCategoryId, page]);
 
   function handleAddToCart(productId: number) {
     setCartError(undefined);
@@ -137,14 +143,14 @@ function Storefront() {
               type="text"
               placeholder="Search products..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); setPage(0); }}
               className="w-full border border-slate-200 px-3 py-2 text-sm placeholder:text-slate-400 focus:border-slate-400 focus:outline-none"
             />
           </div>
 
           <div className="flex gap-2">
             <button
-              onClick={() => setSelectedCategoryId(undefined)}
+              onClick={() => { setSelectedCategoryId(undefined); setPage(0); }}
               className={`px-3 py-2 text-xs font-medium uppercase tracking-wider transition-colors ${
                 selectedCategoryId === undefined
                   ? "bg-slate-900 text-white"
@@ -156,7 +162,7 @@ function Storefront() {
             {categories.map((cat) => (
               <button
                 key={cat.id}
-                onClick={() => setSelectedCategoryId(cat.id)}
+                onClick={() => { setSelectedCategoryId(cat.id); setPage(0); }}
                 className={`px-3 py-2 text-xs font-medium uppercase tracking-wider transition-colors ${
                   selectedCategoryId === cat.id
                     ? "bg-slate-900 text-white"
@@ -174,15 +180,57 @@ function Storefront() {
         ) : products.length === 0 ? (
           <p className="text-sm text-slate-400">No products found.</p>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={handleAddToCart}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {products.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={handleAddToCart}
+                />
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="mt-8 flex items-center justify-center gap-2">
+                <button
+                  onClick={() => setPage(page - 1)}
+                  disabled={page === 0}
+                  className={`px-3 py-2 text-xs font-medium uppercase tracking-wider transition-colors ${
+                    page === 0
+                      ? "cursor-not-allowed text-slate-300"
+                      : "border border-slate-200 text-slate-600 hover:border-slate-400"
+                  }`}
+                >
+                  Previous
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setPage(i)}
+                    className={`px-3 py-2 text-xs font-medium uppercase tracking-wider transition-colors ${
+                      i === page
+                        ? "bg-slate-900 text-white"
+                        : "border border-slate-200 text-slate-600 hover:border-slate-400"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setPage(page + 1)}
+                  disabled={page >= totalPages - 1}
+                  className={`px-3 py-2 text-xs font-medium uppercase tracking-wider transition-colors ${
+                    page >= totalPages - 1
+                      ? "cursor-not-allowed text-slate-300"
+                      : "border border-slate-200 text-slate-600 hover:border-slate-400"
+                  }`}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         )}
       </main>
 

@@ -36,7 +36,20 @@ const darkChocolate = {
   category: snacks,
 };
 
-const allProducts = [sparklingWater, darkChocolate];
+const chips = {
+  id: 3,
+  name: "Chips",
+  description: "Potato chips, 8oz",
+  price: 3.99,
+  stockQuantity: 50,
+  reservedQuantity: 0,
+  availableQuantity: 50,
+  imageUrl: "https://picsum.photos/seed/snack4/400/400",
+  status: "ACTIVE",
+  category: snacks,
+};
+
+const allProducts = [sparklingWater, darkChocolate, chips];
 
 function jsonResponse(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -45,9 +58,20 @@ function jsonResponse(data: unknown, status = 200) {
   });
 }
 
+function paginated(products: typeof allProducts) {
+  return {
+    content: products,
+    page: 0,
+    size: 12,
+    totalPages: 1,
+    totalElements: products.length,
+  };
+}
+
 let cartItems: Array<{ id: number; product: typeof sparklingWater; quantity: number }>;
 let nextItemId: number;
 let addToCartFails: boolean;
+let productsPerPage = 12;
 
 describe("Mini-Mart storefront", () => {
   beforeEach(() => {
@@ -55,6 +79,7 @@ describe("Mini-Mart storefront", () => {
     cartItems = [];
     nextItemId = 1;
     addToCartFails = false;
+    productsPerPage = 12;
 
     vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === "string" ? input : input.toString();
@@ -121,10 +146,25 @@ describe("Mini-Mart storefront", () => {
         return Promise.resolve(jsonResponse({ status: "removed" }));
       }
       if (url.includes("categoryId=1")) {
-        return Promise.resolve(jsonResponse([sparklingWater]));
+        return Promise.resolve(jsonResponse(paginated([sparklingWater])));
       }
       if (url.includes("categoryId=2")) {
-        return Promise.resolve(jsonResponse([darkChocolate]));
+        return Promise.resolve(jsonResponse(paginated([darkChocolate])));
+      }
+      if (url.includes("/api/products") && !url.includes("/api/admin")) {
+        const reqUrl = new URL(url, "http://localhost");
+        const page = parseInt(reqUrl.searchParams.get("page") || "0");
+        const size = productsPerPage;
+        const start = page * size;
+        const content = allProducts.slice(start, start + size);
+        const totalPages = Math.ceil(allProducts.length / size);
+        return Promise.resolve(jsonResponse({
+          content,
+          page,
+          size,
+          totalPages,
+          totalElements: allProducts.length,
+        }));
       }
       return Promise.resolve(jsonResponse(allProducts));
     }));
@@ -201,6 +241,26 @@ describe("Mini-Mart storefront", () => {
     await userEvent.click(removeButton);
 
     expect(await screen.findByText("Your cart is empty.")).toBeInTheDocument();
+  });
+
+  test("shows pagination controls when products span multiple pages", async () => {
+    productsPerPage = 2;
+    render(<App />);
+    await screen.findByText("Sparkling Water");
+
+    expect(screen.getAllByText("1").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("2").length).toBeGreaterThan(0);
+  });
+
+  test("pagination navigates between pages", async () => {
+    productsPerPage = 2;
+    render(<App />);
+    await screen.findByText("Sparkling Water");
+    expect(screen.getByText("Dark Chocolate Bar")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByText("2"));
+    expect(await screen.findByText("Chips")).toBeInTheDocument();
+    expect(screen.queryByText("Sparkling Water")).not.toBeInTheDocument();
   });
 
   test("admin login page renders at /admin route", async () => {
