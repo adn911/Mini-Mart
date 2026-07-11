@@ -2,9 +2,10 @@ import { type Product } from "../api";
 
 type ProductCardProps = {
   product: Product;
+  onAddToCart: (productId: number) => void;
 };
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
   const outOfStock = product.availableQuantity <= 0;
 
   return (
@@ -35,10 +36,15 @@ export default function ProductCard({ product }: ProductCardProps) {
           </span>
 
           <button
-            disabled
-            className="cursor-not-allowed border border-slate-200 px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-slate-300 transition-colors"
+            onClick={() => onAddToCart(product.id)}
+            disabled={outOfStock}
+            className={`border px-3 py-1.5 text-xs font-medium uppercase tracking-wider transition-colors ${
+              outOfStock
+                ? "cursor-not-allowed border-slate-200 text-slate-300"
+                : "border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white"
+            }`}
           >
-            Add to cart
+            {outOfStock ? "Out of stock" : "Add to cart"}
           </button>
         </div>
       </div>

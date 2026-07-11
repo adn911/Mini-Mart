@@ -189,3 +189,51 @@ export async function getProducts(search?: string, categoryId?: number): Promise
 
   return response.json() as Promise<Product[]>;
 }
+
+export type CartItem = {
+  id: number;
+  product: Product;
+  quantity: number;
+};
+
+export type CartResponse = {
+  items: CartItem[];
+  itemCount: number;
+};
+
+export async function getCart(): Promise<CartResponse> {
+  const response = await fetch("/api/cart");
+  if (!response.ok) throw new Error("Failed to fetch cart");
+  return response.json() as Promise<CartResponse>;
+}
+
+export async function addCartItem(productId: number, quantity: number): Promise<CartItem> {
+  const response = await fetch("/api/cart/items", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ productId, quantity }),
+  });
+  if (!response.ok) {
+    const body = await response.json() as { error: string };
+    throw new Error(body.error);
+  }
+  return response.json() as Promise<CartItem>;
+}
+
+export async function updateCartItem(itemId: number, quantity: number): Promise<CartItem | { status: string }> {
+  const response = await fetch(`/api/cart/items/${itemId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ quantity }),
+  });
+  if (!response.ok) {
+    const body = await response.json() as { error: string };
+    throw new Error(body.error);
+  }
+  return response.json() as Promise<CartItem | { status: string }>;
+}
+
+export async function removeCartItem(itemId: number): Promise<void> {
+  const response = await fetch(`/api/cart/items/${itemId}`, { method: "DELETE" });
+  if (!response.ok) throw new Error("Failed to remove item");
+}

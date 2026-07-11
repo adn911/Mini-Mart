@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 
 # Session-backed cart with stock reservation
 

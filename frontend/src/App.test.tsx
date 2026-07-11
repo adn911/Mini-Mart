@@ -45,10 +45,18 @@ function jsonResponse(data: unknown, status = 200) {
   });
 }
 
+let cartItems: Array<{ id: number; product: typeof sparklingWater; quantity: number }>;
+let nextItemId: number;
+let addToCartFails: boolean;
+
 describe("Mini-Mart storefront", () => {
   beforeEach(() => {
     localStorage.clear();
-    vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL) => {
+    cartItems = [];
+    nextItemId = 1;
+    addToCartFails = false;
+
+    vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === "string" ? input : input.toString();
       if (url.includes("/api/admin/login")) {
         return Promise.resolve(jsonResponse({ token: "test-token" }));
@@ -64,6 +72,53 @@ describe("Mini-Mart storefront", () => {
       }
       if (url.includes("/api/categories")) {
         return Promise.resolve(jsonResponse(mockCategories));
+      }
+      if (url === "/api/cart") {
+        return Promise.resolve(jsonResponse({
+          items: cartItems,
+          itemCount: cartItems.reduce((s, i) => s + i.quantity, 0),
+        }));
+      }
+      if (url.includes("/api/cart/items") && (!init || init.method === "POST")) {
+        if (addToCartFails) {
+          return Promise.resolve(jsonResponse({ error: "Insufficient stock" }, 400));
+        }
+        const body = JSON.parse(init?.body as string);
+        const product = allProducts.find((p) => p.id === body.productId) || sparklingWater;
+        const existing = cartItems.find((i) => i.product.id === body.productId);
+        if (existing) {
+          existing.quantity += body.quantity || 1;
+          return Promise.resolve(jsonResponse(existing, 201));
+        }
+        const newItem = { id: nextItemId++, product, quantity: body.quantity || 1 };
+        cartItems.push(newItem);
+        return Promise.resolve(jsonResponse(newItem, 201));
+      }
+      if (url.includes("/api/cart/items/") && init?.method === "PUT") {
+        const match = url.match(/\/api\/cart\/items\/(\d+)/);
+        if (match) {
+          const itemId = parseInt(match[1]);
+          const body = JSON.parse(init.body as string);
+          const item = cartItems.find((i) => i.id === itemId);
+          if (item) {
+            if (body.quantity === 0) {
+              cartItems.splice(cartItems.indexOf(item), 1);
+              return Promise.resolve(jsonResponse({ status: "removed" }));
+            }
+            item.quantity = body.quantity;
+            return Promise.resolve(jsonResponse(item));
+          }
+        }
+        return Promise.resolve(jsonResponse({ error: "Not found" }, 400));
+      }
+      if (url.includes("/api/cart/items/") && init?.method === "DELETE") {
+        const match = url.match(/\/api\/cart\/items\/(\d+)/);
+        if (match) {
+          const itemId = parseInt(match[1]);
+          const idx = cartItems.findIndex((i) => i.id === itemId);
+          if (idx !== -1) cartItems.splice(idx, 1);
+        }
+        return Promise.resolve(jsonResponse({ status: "removed" }));
       }
       if (url.includes("categoryId=1")) {
         return Promise.resolve(jsonResponse([sparklingWater]));
@@ -97,6 +152,55 @@ describe("Mini-Mart storefront", () => {
     await waitFor(() => {
       expect(screen.queryByText("Dark Chocolate Bar")).not.toBeInTheDocument();
     });
+  });
+
+  test("shows cart button and opens cart panel on add to cart", async () => {
+    render(<App />);
+    await screen.findByText("Sparkling Water");
+
+    const addButtons = screen.getAllByRole("button", { name: "Add to cart" });
+    await userEvent.click(addButtons[0]);
+
+    expect(await screen.findByText("$4.99 each")).toBeInTheDocument();
+  });
+
+  test("updating cart item quantity", async () => {
+    render(<App />);
+    await screen.findByText("Sparkling Water");
+
+    const addButtons = screen.getAllByRole("button", { name: "Add to cart" });
+    await userEvent.click(addButtons[0]);
+    expect(await screen.findByText("$4.99 each")).toBeInTheDocument();
+
+    const plusButton = screen.getByText("+");
+    await userEvent.click(plusButton);
+
+    expect(await screen.findByText("$9.98")).toBeInTheDocument();
+  });
+
+  test("shows error on insufficient stock", async () => {
+    addToCartFails = true;
+    render(<App />);
+    await screen.findByText("Sparkling Water");
+
+    const addButtons = screen.getAllByRole("button", { name: "Add to cart" });
+    await userEvent.click(addButtons[0]);
+
+    expect(await screen.findByText("Insufficient stock")).toBeInTheDocument();
+  });
+
+  test("removing cart item", async () => {
+    render(<App />);
+    await screen.findByText("Sparkling Water");
+
+    const addButtons = screen.getAllByRole("button", { name: "Add to cart" });
+    await userEvent.click(addButtons[0]);
+    expect(await screen.findByText("$4.99 each")).toBeInTheDocument();
+
+    const removeButton = screen.getByText("Remove");
+    await userEvent.click(removeButton);
+
+    expect(await screen.findByText("Your cart is empty.")).toBeInTheDocument();
   });
 
   test("admin login page renders at /admin route", async () => {
