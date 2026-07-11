@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.minimart.entity.Category;
 import com.minimart.entity.EntityStatus;
 import com.minimart.entity.Product;
+import com.minimart.repository.CartItemRepository;
+import com.minimart.repository.CartRepository;
 import com.minimart.repository.CategoryRepository;
 import com.minimart.repository.ProductRepository;
 import java.math.BigDecimal;
@@ -30,8 +32,16 @@ class PublicCatalogTest {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Autowired
+    private CartItemRepository cartItemRepository;
+
+    @Autowired
+    private CartRepository cartRepository;
+
     @BeforeEach
     void setUp() {
+        cartItemRepository.deleteAll();
+        cartRepository.deleteAll();
         productRepository.deleteAll();
         categoryRepository.deleteAll();
     }

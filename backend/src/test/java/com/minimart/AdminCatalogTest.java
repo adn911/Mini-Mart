@@ -11,6 +11,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minimart.entity.Category;
 import com.minimart.entity.EntityStatus;
 import com.minimart.entity.Product;
+import com.minimart.repository.CartItemRepository;
+import com.minimart.repository.CartRepository;
 import com.minimart.repository.CategoryRepository;
 import com.minimart.repository.ProductRepository;
 import java.math.BigDecimal;
@@ -39,10 +41,18 @@ class AdminCatalogTest {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Autowired
+    private CartItemRepository cartItemRepository;
+
+    @Autowired
+    private CartRepository cartRepository;
+
     private String adminToken;
 
     @BeforeEach
     void setUp() throws Exception {
+        cartItemRepository.deleteAll();
+        cartRepository.deleteAll();
         productRepository.deleteAll();
         categoryRepository.deleteAll();
 

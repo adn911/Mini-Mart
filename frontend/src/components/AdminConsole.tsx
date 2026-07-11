@@ -178,7 +178,7 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
   const handleSaveProduct = async (data: Partial<Product>) => {
     try {
       if (editingProduct) {
-        await updateProduct(editingProduct.id, data);
+        await updateProductApi(editingProduct.id, data);
       } else {
         await createProduct(data);
       }
@@ -186,7 +186,7 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
       setEditingProduct(undefined);
       await loadProducts();
     } catch (e) {
-      alert("Failed to save product");
+      alert("Failed to save product: " + (e instanceof Error ? e.message : String(e)));
     }
   };
 
