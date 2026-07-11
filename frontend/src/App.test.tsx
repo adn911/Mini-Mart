@@ -45,21 +45,32 @@ function jsonResponse(data: unknown) {
   });
 }
 
+function mockFetch() {
+  vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL) => {
+    const url = typeof input === "string" ? input : input.toString();
+    if (url.includes("/api/categories")) {
+      return Promise.resolve(jsonResponse(mockCategories));
+    }
+    if (url.includes("categoryId=1")) {
+      return Promise.resolve(jsonResponse([sparklingWater]));
+    }
+    if (url.includes("categoryId=2")) {
+      return Promise.resolve(jsonResponse([darkChocolate]));
+    }
+    if (url.includes("/api/admin/login")) {
+      return Promise.resolve(jsonResponse({ token: "test-token" }));
+    }
+    if (url.includes("/api/admin/me")) {
+      return Promise.resolve(jsonResponse({ username: "admin" }));
+    }
+    return Promise.resolve(jsonResponse(allProducts));
+  }));
+}
+
 describe("Mini-Mart storefront", () => {
   beforeEach(() => {
-    vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL) => {
-      const url = typeof input === "string" ? input : input.toString();
-      if (url.includes("/api/categories")) {
-        return Promise.resolve(jsonResponse(mockCategories));
-      }
-      if (url.includes("categoryId=1")) {
-        return Promise.resolve(jsonResponse([sparklingWater]));
-      }
-      if (url.includes("categoryId=2")) {
-        return Promise.resolve(jsonResponse([darkChocolate]));
-      }
-      return Promise.resolve(jsonResponse(allProducts));
-    }));
+    localStorage.clear();
+    mockFetch();
   });
 
   test("renders Mini-Mart branding and loads products", async () => {
@@ -92,5 +103,37 @@ describe("Mini-Mart storefront", () => {
       expect(screen.queryByText("Dark Chocolate Bar")).not.toBeInTheDocument();
     });
     expect(screen.getByText("Sparkling Water")).toBeInTheDocument();
+  });
+
+  test("admin login page renders at /admin route", async () => {
+    window.history.pushState({}, "", "/admin");
+
+    render(<App />);
+
+    expect(screen.getByText("Admin Login")).toBeInTheDocument();
+    expect(screen.getByLabelText("Username")).toBeInTheDocument();
+    expect(screen.getByLabelText("Password")).toBeInTheDocument();
+  });
+
+  test("admin login form submits and shows console", async () => {
+    window.history.pushState({}, "", "/admin");
+
+    render(<App />);
+
+    await userEvent.type(screen.getByLabelText("Username"), "admin");
+    await userEvent.type(screen.getByLabelText("Password"), "admin123");
+    await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
+
+    expect(await screen.findByText("Admin Console")).toBeInTheDocument();
+  });
+
+  test("admin console shows sign out button", async () => {
+    localStorage.setItem("mini-mart-admin-token", "test-token");
+    window.history.pushState({}, "", "/admin");
+
+    render(<App />);
+
+    expect(await screen.findByText("Admin Console")).toBeInTheDocument();
+    expect(screen.getByText("Sign out")).toBeInTheDocument();
   });
 });

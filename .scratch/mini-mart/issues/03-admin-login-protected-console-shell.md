@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 
 # Admin login and protected console shell
 
@@ -14,17 +14,21 @@ This slice proves the admin security model end to end without requiring public c
 
 ## Acceptance criteria
 
-- [ ] Admin credentials are loaded from a JSON resource and are not stored in the database.
-- [ ] Admin login validates username/password against the JSON credentials.
-- [ ] Successful admin login returns a signed JWT.
-- [ ] Failed admin login returns an appropriate unauthorized error without exposing credential details.
-- [ ] Admin API routes require a valid admin JWT.
-- [ ] Requests without a token or with an invalid token cannot access protected admin APIs.
-- [ ] The frontend has a separated admin route with a login screen.
-- [ ] After successful login, the frontend shows an authenticated admin console shell.
-- [ ] The frontend stores and sends the admin token in a simple v1-appropriate way.
-- [ ] Automated tests cover successful login, failed login, protected admin API access, and rejected unauthenticated access.
+- [x] Admin credentials are loaded from a JSON resource and are not stored in the database.
+- [x] Admin login validates username/password against the JSON credentials.
+- [x] Successful admin login returns a signed JWT.
+- [x] Failed admin login returns an appropriate unauthorized error without exposing credential details.
+- [x] Admin API routes require a valid admin JWT.
+- [x] Requests without a token or with an invalid token cannot access protected admin APIs.
+- [x] The frontend has a separated admin route with a login screen.
+- [x] After successful login, the frontend shows an authenticated admin console shell.
+- [x] The frontend stores and sends the admin token in a simple v1-appropriate way.
+- [x] Automated tests cover successful login, failed login, protected admin API access, and rejected unauthenticated access.
 
 ## Blocked by
 
 - .scratch/mini-mart/issues/01-runnable-monorepo-skeleton.md
+
+## Comments
+
+Implemented Jul 11 2026. Backend: admin-credentials.json resource, JwtUtil (JJWT-based HMAC-SHA256 tokens), AdminAuthService, JwtAuthFilter, SecurityConfig (stateless, /api/admin/** protected), AdminAuthController (POST /api/admin/login, GET /api/admin/me). Frontend: AdminLogin component, AdminConsole component, route-based navigation (/admin), localStorage token storage. Tests: 5 backend integration tests, 3 frontend tests for admin routes.

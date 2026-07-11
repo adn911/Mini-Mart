@@ -1,10 +1,33 @@
 import { useEffect, useState } from "react";
 
-import { getCategories, getProducts, type Category, type Product } from "./api";
+import { getCategories, getProducts, getStoredToken, type Category, type Product } from "./api";
+import AdminConsole from "./components/AdminConsole";
+import AdminLogin from "./components/AdminLogin";
 import ProductCard from "./components/ProductCard";
 import "./styles.css";
 
-export default function App() {
+function useIsAdminRoute() {
+  const [isAdmin, setIsAdmin] = useState(
+    window.location.pathname.startsWith("/admin")
+  );
+
+  useEffect(() => {
+    const handler = () => {
+      setIsAdmin(window.location.pathname.startsWith("/admin"));
+    };
+    window.addEventListener("popstate", handler);
+    return () => window.removeEventListener("popstate", handler);
+  }, []);
+
+  return isAdmin;
+}
+
+function navigate(path: string) {
+  window.history.pushState({}, "", path);
+  window.dispatchEvent(new PopStateEvent("popstate"));
+}
+
+function Storefront() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
@@ -29,9 +52,14 @@ export default function App() {
     <div className="min-h-screen bg-white text-slate-900">
       <header className="border-b border-slate-200">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight">Mini-Mart</h1>
-          </div>
+          <h1 className="text-xl font-semibold tracking-tight">Mini-Mart</h1>
+          <a
+            href="/admin"
+            onClick={(e) => { e.preventDefault(); navigate("/admin"); }}
+            className="text-xs font-medium uppercase tracking-wider text-slate-500 transition-colors hover:text-slate-900"
+          >
+            Admin
+          </a>
         </div>
       </header>
 
@@ -88,4 +116,19 @@ export default function App() {
       </main>
     </div>
   );
+}
+
+export default function App() {
+  const isAdmin = useIsAdminRoute();
+  const [loggedIn, setLoggedIn] = useState(!!getStoredToken());
+
+  if (!isAdmin) {
+    return <Storefront />;
+  }
+
+  if (!loggedIn) {
+    return <AdminLogin onLogin={() => setLoggedIn(true)} />;
+  }
+
+  return <AdminConsole onLogout={() => setLoggedIn(false)} />;
 }
