@@ -92,6 +92,87 @@ export async function getAdminMe(): Promise<{ username: string }> {
   return response.json() as Promise<{ username: string }>;
 }
 
+export async function getAdminProducts(search?: string, categoryId?: number, includeDeleted?: boolean): Promise<Product[]> {
+  const params = new URLSearchParams();
+  if (search) params.set("search", search);
+  if (categoryId) params.set("categoryId", String(categoryId));
+  if (includeDeleted) params.set("includeDeleted", "true");
+
+  const query = params.toString();
+  const url = query ? `/api/admin/products?${query}` : "/api/admin/products";
+
+  const response = await authFetch(url);
+  if (!response.ok) throw new Error("Failed to fetch products");
+  return response.json() as Promise<Product[]>;
+}
+
+export async function createProduct(data: Partial<Product>): Promise<Product> {
+  const response = await authFetch("/api/admin/products", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error("Failed to create product");
+  return response.json() as Promise<Product>;
+}
+
+export async function updateProduct(id: number, data: Partial<Product>): Promise<Product> {
+  const response = await authFetch(`/api/admin/products/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error("Failed to update product");
+  return response.json() as Promise<Product>;
+}
+
+export async function deleteProduct(id: number): Promise<void> {
+  const response = await authFetch(`/api/admin/products/${id}`, { method: "DELETE" });
+  if (!response.ok) throw new Error("Failed to delete product");
+}
+
+export async function refillProduct(id: number, quantity: number): Promise<Product> {
+  const response = await authFetch(`/api/admin/products/${id}/refill`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ quantity }),
+  });
+  if (!response.ok) throw new Error("Failed to refill product");
+  return response.json() as Promise<Product>;
+}
+
+export async function getAdminCategories(includeDeleted?: boolean): Promise<Category[]> {
+  const url = includeDeleted ? "/api/admin/categories?includeDeleted=true" : "/api/admin/categories";
+  const response = await authFetch(url);
+  if (!response.ok) throw new Error("Failed to fetch categories");
+  return response.json() as Promise<Category[]>;
+}
+
+export async function createCategory(name: string): Promise<Category> {
+  const response = await authFetch("/api/admin/categories", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+  if (!response.ok) throw new Error("Failed to create category");
+  return response.json() as Promise<Category>;
+}
+
+export async function updateCategory(id: number, name: string): Promise<Category> {
+  const response = await authFetch(`/api/admin/categories/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+  if (!response.ok) throw new Error("Failed to update category");
+  return response.json() as Promise<Category>;
+}
+
+export async function deleteCategory(id: number): Promise<void> {
+  const response = await authFetch(`/api/admin/categories/${id}`, { method: "DELETE" });
+  if (!response.ok) throw new Error("Failed to delete category");
+}
+
 export async function getProducts(search?: string, categoryId?: number): Promise<Product[]> {
   const params = new URLSearchParams();
   if (search) params.set("search", search);

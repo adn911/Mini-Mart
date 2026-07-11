@@ -20,4 +20,16 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     """)
     List<Product> findActiveProducts(@Param("search") String search,
                                      @Param("categoryId") Long categoryId);
+
+    @Query("""
+        SELECT p FROM Product p
+        WHERE (:includeDeleted = true OR p.status = 'ACTIVE')
+        AND (:search IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))
+             OR LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')))
+        AND (:categoryId IS NULL OR p.category.id = :categoryId)
+        ORDER BY p.id ASC
+    """)
+    List<Product> findProductsForAdmin(@Param("search") String search,
+                                       @Param("categoryId") Long categoryId,
+                                       @Param("includeDeleted") boolean includeDeleted);
 }
