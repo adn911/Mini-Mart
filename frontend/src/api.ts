@@ -311,12 +311,25 @@ export async function checkoutCart(paymentMethod: string, shipping: ShippingAddr
   return response.json() as Promise<OrderResponse>;
 }
 
-export async function getAdminOrders(search?: string, status?: string): Promise<OrderResponse[]> {
+export type OrderFilters = {
+  search?: string;
+  name?: string;
+  city?: string;
+  status?: string;
+  dateFrom?: string;
+  dateTo?: string;
+};
+
+export async function getAdminOrders(filters?: OrderFilters): Promise<OrderResponse[]> {
   const params = new URLSearchParams();
-  if (search) params.set("search", search);
-  if (status) params.set("status", status);
-  const query = params.toString();
-  const url = query ? `/api/admin/orders?${query}` : "/api/admin/orders";
+  if (filters?.search) params.set("search", filters.search);
+  if (filters?.name) params.set("name", filters.name);
+  if (filters?.city) params.set("city", filters.city);
+  if (filters?.status) params.set("status", filters.status);
+  if (filters?.dateFrom) params.set("dateFrom", filters.dateFrom);
+  if (filters?.dateTo) params.set("dateTo", filters.dateTo);
+  const qs = params.toString();
+  const url = qs ? `/api/admin/orders?${qs}` : "/api/admin/orders";
   const response = await authFetch(url);
   if (!response.ok) throw new Error("Failed to fetch orders");
   return response.json() as Promise<OrderResponse[]>;

@@ -2,6 +2,10 @@ package com.minimart.controller;
 
 import com.minimart.entity.CustomerOrder;
 import com.minimart.repository.CustomerOrderRepository;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
@@ -21,17 +25,35 @@ class AdminOrderController {
         this.customerOrderRepository = customerOrderRepository;
     }
 
+    private Instant parseDate(String dateStr) {
+        if (dateStr == null || dateStr.isBlank()) return null;
+        try {
+            return LocalDate.parse(dateStr).atStartOfDay(ZoneOffset.UTC).toInstant();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private Instant parseDateEnd(String dateStr) {
+        if (dateStr == null || dateStr.isBlank()) return null;
+        try {
+            return LocalDate.parse(dateStr).atTime(LocalTime.MAX).toInstant(ZoneOffset.UTC);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     @GetMapping("/api/admin/orders")
     List<CustomerOrder> listOrders(
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) String status) {
-        if (search != null && !search.isBlank()) {
-            return customerOrderRepository.searchOrders(search, status);
-        }
-        if (status != null && !status.isBlank()) {
-            return customerOrderRepository.findByStatus(status);
-        }
-        return customerOrderRepository.findAllByOrderByCreatedAtDesc();
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo) {
+        return customerOrderRepository.searchOrders(
+            search, name, city, status,
+            parseDate(dateFrom), parseDateEnd(dateTo));
     }
 
     @PutMapping("/api/admin/orders/{id}/status")

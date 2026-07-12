@@ -200,6 +200,10 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [orderSearch, setOrderSearch] = useState("");
+  const [orderNameFilter, setOrderNameFilter] = useState("");
+  const [orderCityFilter, setOrderCityFilter] = useState("");
+  const [orderDateFrom, setOrderDateFrom] = useState("");
+  const [orderDateTo, setOrderDateTo] = useState("");
   const [orderStatusFilter, setOrderStatusFilter] = useState("");
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [reviewOrder, setReviewOrder] = useState<OrderResponse | null>(null);
@@ -231,7 +235,14 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
   const loadOrders = async () => {
     setOrdersLoading(true);
     try {
-      const data = await getAdminOrders(orderSearch || undefined, orderStatusFilter || undefined);
+      const data = await getAdminOrders({
+        search: orderSearch || undefined,
+        name: orderNameFilter || undefined,
+        city: orderCityFilter || undefined,
+        status: orderStatusFilter || undefined,
+        dateFrom: orderDateFrom || undefined,
+        dateTo: orderDateTo || undefined,
+      });
       setOrders(data);
     } catch {
       setOrders([]);
@@ -253,7 +264,7 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
 
   useEffect(() => { setError(null); loadProducts(); }, [search, includeDeleted]);
   useEffect(() => { loadCategories(); }, []);
-  useEffect(() => { loadOrders(); }, [orderSearch, orderStatusFilter]);
+  useEffect(() => { loadOrders(); }, [orderSearch, orderNameFilter, orderCityFilter, orderStatusFilter, orderDateFrom, orderDateTo]);
 
   const handleSaveProduct = async (data: Partial<Product>) => {
     try {
@@ -550,9 +561,21 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
         {tab === "orders" && (
           <div>
             <div className="mb-4 flex flex-wrap items-center gap-3">
-              <input type="text" placeholder="Search by session ID..." value={orderSearch}
+              <input type="text" placeholder="Session ID..." value={orderSearch}
                 onChange={(e) => setOrderSearch(e.target.value)}
-                className="flex-1 min-w-[200px] border border-slate-200 px-3 py-2 text-sm placeholder:text-slate-400 focus:border-slate-400 focus:outline-none" />
+                className="min-w-[140px] flex-1 border border-slate-200 px-3 py-2 text-sm placeholder:text-slate-400 focus:border-slate-400 focus:outline-none" />
+              <input type="text" placeholder="Name..." value={orderNameFilter}
+                onChange={(e) => setOrderNameFilter(e.target.value)}
+                className="min-w-[140px] flex-1 border border-slate-200 px-3 py-2 text-sm placeholder:text-slate-400 focus:border-slate-400 focus:outline-none" />
+              <input type="text" placeholder="City..." value={orderCityFilter}
+                onChange={(e) => setOrderCityFilter(e.target.value)}
+                className="min-w-[120px] flex-1 border border-slate-200 px-3 py-2 text-sm placeholder:text-slate-400 focus:border-slate-400 focus:outline-none" />
+              <input type="date" value={orderDateFrom}
+                onChange={(e) => setOrderDateFrom(e.target.value)}
+                className="min-w-[140px] border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none" />
+              <input type="date" value={orderDateTo}
+                onChange={(e) => setOrderDateTo(e.target.value)}
+                className="min-w-[140px] border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none" />
               <select value={orderStatusFilter} onChange={(e) => setOrderStatusFilter(e.target.value)}
                 className="border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none">
                 <option value="">All statuses</option>
