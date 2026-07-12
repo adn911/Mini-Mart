@@ -321,3 +321,13 @@ export async function getAdminOrders(search?: string, status?: string): Promise<
   if (!response.ok) throw new Error("Failed to fetch orders");
   return response.json() as Promise<OrderResponse[]>;
 }
+
+export async function updateOrderStatus(id: number, status: string): Promise<OrderResponse> {
+  const response = await authFetch(`/api/admin/orders/${id}/status`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+  if (!response.ok) throw new Error("Failed to update order status");
+  return response.json() as Promise<OrderResponse>;
+}

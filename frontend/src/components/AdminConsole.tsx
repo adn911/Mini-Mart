@@ -11,6 +11,7 @@ import {
   getAdminProducts,
   refillProduct,
   updateCategory as updateCategoryApi,
+  updateOrderStatus,
   updateProduct as updateProductApi,
   uploadProductImage,
   type Category,
@@ -201,6 +202,8 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
   const [orderSearch, setOrderSearch] = useState("");
   const [orderStatusFilter, setOrderStatusFilter] = useState("");
   const [ordersLoading, setOrdersLoading] = useState(false);
+  const [confirmingOrderId, setConfirmingOrderId] = useState<number | null>(null);
+  const [orderActionError, setOrderActionError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -233,6 +236,18 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
       setOrders([]);
     }
     setOrdersLoading(false);
+  };
+
+  const handleConfirmOrder = async (id: number) => {
+    setOrderActionError(null);
+    setConfirmingOrderId(id);
+    try {
+      await updateOrderStatus(id, "CONFIRMED");
+      await loadOrders();
+    } catch {
+      setOrderActionError("Failed to confirm order");
+    }
+    setConfirmingOrderId(null);
   };
 
   useEffect(() => { setError(null); loadProducts(); }, [search, includeDeleted]);
@@ -541,10 +556,17 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
                 className="border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none">
                 <option value="">All statuses</option>
                 <option value="PLACED">PLACED</option>
+                <option value="CONFIRMED">CONFIRMED</option>
                 <option value="SHIPPED">SHIPPED</option>
                 <option value="CANCELLED">CANCELLED</option>
               </select>
             </div>
+
+            {orderActionError && (
+              <div className="mb-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
+                {orderActionError}
+              </div>
+            )}
 
             {ordersLoading ? (
               <p className="text-sm text-slate-400">Loading...</p>
@@ -563,7 +585,8 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
                       <th className="pb-3 pr-4">Payment</th>
                       <th className="pb-3 pr-4">Total</th>
                       <th className="pb-3 pr-4">Items</th>
-                      <th className="pb-3">Date</th>
+                      <th className="pb-3 pr-4">Date</th>
+                      <th className="pb-3">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -580,6 +603,17 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
                         <td className="py-3 pr-4">${o.total.toFixed(2)}</td>
                         <td className="py-3 pr-4 text-slate-500">{o.items.length}</td>
                         <td className="py-3 text-slate-500 text-xs">{new Date(o.createdAt).toLocaleString()}</td>
+                        <td className="py-3 pl-4">
+                          {o.status === "PLACED" && (
+                            <button
+                              onClick={() => handleConfirmOrder(o.id)}
+                              disabled={confirmingOrderId === o.id}
+                              className="text-xs font-medium uppercase tracking-wider text-emerald-600 transition-colors hover:text-emerald-700 disabled:opacity-50"
+                            >
+                              {confirmingOrderId === o.id ? "..." : "Confirm"}
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
