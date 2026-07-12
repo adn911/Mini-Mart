@@ -1,11 +1,14 @@
 package com.minimart.config;
 
+import com.minimart.entity.AdminUser;
 import com.minimart.entity.Category;
 import com.minimart.entity.Product;
+import com.minimart.repository.AdminUserRepository;
 import com.minimart.repository.CategoryRepository;
 import com.minimart.repository.ProductRepository;
 import java.math.BigDecimal;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,16 +17,23 @@ public class DataInitializer implements CommandLineRunner {
 
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
+    private final AdminUserRepository adminUserRepository;
 
     public DataInitializer(CategoryRepository categoryRepository,
-                           ProductRepository productRepository) {
+                           ProductRepository productRepository,
+                           AdminUserRepository adminUserRepository) {
         this.categoryRepository = categoryRepository;
         this.productRepository = productRepository;
+        this.adminUserRepository = adminUserRepository;
     }
 
     @Override
     @Transactional
     public void run(String... args) {
+        if (adminUserRepository.count() == 0) {
+            adminUserRepository.save(
+                new AdminUser("admin", new BCryptPasswordEncoder().encode("admin123")));
+        }
         if (categoryRepository.count() > 0) return;
 
         Category beverages = categoryRepository.save(new Category("Beverages"));
