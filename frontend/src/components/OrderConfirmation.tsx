@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { type CartItem, type OrderResponse, type ShippingAddress } from "../api";
 
 type OrderConfirmationProps = {
@@ -13,12 +14,32 @@ type OrderConfirmationProps = {
   error?: string;
 };
 
+type FieldErrors = Partial<Record<keyof ShippingAddress, string>>;
+
+const requiredFields: (keyof ShippingAddress)[] = ["firstName", "lastName", "addressLine", "city", "zipCode", "phone1"];
+const fieldLabels: Record<keyof ShippingAddress, string> = {
+  firstName: "First Name", lastName: "Last Name", addressLine: "Address",
+  city: "City", zipCode: "Zip Code", phone1: "Phone", phone2: "Phone 2",
+};
+
+function validateAddress(address: ShippingAddress): FieldErrors {
+  const errors: FieldErrors = {};
+  for (const f of requiredFields) {
+    if (!(address[f] ?? "").trim()) {
+      errors[f] = `${fieldLabels[f]} is required`;
+    }
+  }
+  return errors;
+}
+
 function AddressForm({
   address,
   onChange,
+  errors,
 }: {
   address: ShippingAddress;
   onChange: (address: ShippingAddress) => void;
+  errors: FieldErrors;
 }) {
   function set(field: keyof ShippingAddress, value: string) {
     onChange({ ...address, [field]: value });
@@ -41,18 +62,24 @@ function AddressForm({
       </div>
       <div className="px-6 py-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {fields.map((f) => (
-            <div key={f.key} className={f.key === "addressLine" ? "sm:col-span-2" : ""}>
-              <label htmlFor={f.key} className="mb-1 block text-xs font-medium text-slate-500">{f.label}</label>
-              <input
-                id={f.key}
-                type="text"
-                value={address[f.key]}
-                onChange={(e) => set(f.key, e.target.value)}
-                className="w-full border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
-              />
-            </div>
-          ))}
+          {fields.map((f) => {
+            const err = errors[f.key];
+            return (
+              <div key={f.key} className={f.key === "addressLine" ? "sm:col-span-2" : ""}>
+                <label htmlFor={f.key} className="mb-1 block text-xs font-medium text-slate-500">{f.label}</label>
+                <input
+                  id={f.key}
+                  type="text"
+                  value={address[f.key]}
+                  onChange={(e) => set(f.key, e.target.value)}
+                  className={`w-full border px-3 py-2 text-sm focus:outline-none ${
+                    err ? "border-red-400 focus:border-red-500" : "border-slate-200 focus:border-slate-400"
+                  }`}
+                />
+                {err && <p className="mt-1 text-xs text-red-500">{err}</p>}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -156,8 +183,20 @@ export default function OrderConfirmation({
     );
   }
 
-  const requiredFields: (keyof ShippingAddress)[] = ["firstName", "lastName", "addressLine", "city", "zipCode", "phone1"];
-  const addressValid = shippingAddress && requiredFields.every(f => (shippingAddress[f] ?? "").trim().length > 0);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+
+  function handleConfirm() {
+    if (!shippingAddress || !onShippingAddressChange) return;
+    const errors = validateAddress(shippingAddress);
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+    onConfirmOrder?.();
+  }
+
+  function handleAddressChange(addr: ShippingAddress) {
+    setFieldErrors({});
+    onShippingAddressChange?.(addr);
+  }
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-12">
@@ -203,7 +242,7 @@ export default function OrderConfirmation({
         </div>
 
         {shippingAddress && onShippingAddressChange && (
-          <AddressForm address={shippingAddress} onChange={onShippingAddressChange} />
+          <AddressForm address={shippingAddress} onChange={handleAddressChange} errors={fieldErrors} />
         )}
       </div>
 
@@ -214,7 +253,7 @@ export default function OrderConfirmation({
       )}
 
       <div className="mt-6 flex flex-col items-center gap-3">
-        <button onClick={onConfirmOrder} disabled={confirming || !addressValid}
+        <button onClick={handleConfirm} disabled={confirming}
           className="w-full bg-slate-900 py-2.5 text-xs font-medium uppercase tracking-wider text-white transition-opacity hover:opacity-90 disabled:opacity-50">
           {confirming ? "Placing Order..." : "Confirm Order"}
         </button>
