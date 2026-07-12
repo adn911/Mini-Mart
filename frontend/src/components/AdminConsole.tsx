@@ -202,6 +202,7 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
   const [orderSearch, setOrderSearch] = useState("");
   const [orderStatusFilter, setOrderStatusFilter] = useState("");
   const [ordersLoading, setOrdersLoading] = useState(false);
+  const [reviewOrder, setReviewOrder] = useState<OrderResponse | null>(null);
   const [confirmingOrderId, setConfirmingOrderId] = useState<number | null>(null);
   const [orderActionError, setOrderActionError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -604,15 +605,12 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
                         <td className="py-3 pr-4 text-slate-500">{o.items.length}</td>
                         <td className="py-3 text-slate-500 text-xs">{new Date(o.createdAt).toLocaleString()}</td>
                         <td className="py-3 pl-4">
-                          {o.status === "PLACED" && (
-                            <button
-                              onClick={() => handleConfirmOrder(o.id)}
-                              disabled={confirmingOrderId === o.id}
-                              className="text-xs font-medium uppercase tracking-wider text-emerald-600 transition-colors hover:text-emerald-700 disabled:opacity-50"
-                            >
-                              {confirmingOrderId === o.id ? "..." : "Confirm"}
-                            </button>
-                          )}
+                          <button
+                            onClick={() => setReviewOrder(o)}
+                            className="text-xs font-medium uppercase tracking-wider text-slate-500 transition-colors hover:text-slate-900"
+                          >
+                            Review
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -623,6 +621,88 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
           </div>
         )}
       </div>
+
+      {reviewOrder && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 pt-12">
+          <div className="mx-4 w-full max-w-2xl rounded-lg border border-slate-200 bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+              <h2 className="text-base font-semibold text-slate-900">Order #{reviewOrder.id}</h2>
+              <button onClick={() => setReviewOrder(null)}
+                className="text-sm text-slate-400 hover:text-slate-900 transition-colors">Close</button>
+            </div>
+
+            <div className="max-h-[70vh] overflow-y-auto px-6 py-4 space-y-6">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-1">Status</p>
+                  <span className="text-xs uppercase tracking-wider text-slate-900">{reviewOrder.status}</span>
+                </div>
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-1">Date</p>
+                  <p className="text-xs text-slate-700">{new Date(reviewOrder.createdAt).toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-1">Payment</p>
+                  <p className="text-xs text-slate-700">{(reviewOrder.paymentMethod ?? "CASH_ON_DELIVERY").replace(/_/g, " ")}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-1">Session</p>
+                  <p className="text-xs font-mono text-slate-700">{(reviewOrder.sessionId ?? "").substring(0, 20)}...</p>
+                </div>
+              </div>
+
+              {(reviewOrder.firstName || reviewOrder.lastName) && (
+                <div className="rounded border border-slate-200 px-4 py-3">
+                  <p className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">Shipping Address</p>
+                  <p className="text-sm text-slate-900">{reviewOrder.firstName ?? ""} {reviewOrder.lastName ?? ""}</p>
+                  <p className="text-sm text-slate-700">{reviewOrder.addressLine ?? ""}</p>
+                  <p className="text-sm text-slate-700">{reviewOrder.city ?? ""} {reviewOrder.zipCode ?? ""}</p>
+                  <p className="text-sm text-slate-700">{reviewOrder.phone1 ?? ""}{reviewOrder.phone2 ? `  |  ${reviewOrder.phone2}` : ""}</p>
+                </div>
+              )}
+
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-3">Items ({reviewOrder.items.length})</p>
+                <ul className="divide-y divide-slate-100">
+                  {reviewOrder.items.map((item) => (
+                    <li key={item.id} className="flex items-center gap-3 py-3">
+                      <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded bg-slate-50">
+                        <img src={item.product.imageUrl} alt={item.product.name}
+                          className="h-full w-full object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900 truncate">{item.product.name}</p>
+                        <p className="text-xs text-slate-400">{item.quantity} &times; ${item.unitPrice.toFixed(2)}</p>
+                      </div>
+                      <p className="text-sm font-medium text-slate-900">${(item.quantity * item.unitPrice).toFixed(2)}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="flex items-center justify-between border-t border-slate-200 pt-4 text-base font-semibold text-slate-900">
+                <span>Total</span>
+                <span>${reviewOrder.total.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 border-t border-slate-200 px-6 py-4">
+              <button onClick={() => setReviewOrder(null)}
+                className="px-4 py-2 text-xs font-medium uppercase tracking-wider text-slate-500 transition-colors hover:text-slate-900">
+                Close
+              </button>
+              {reviewOrder.status === "PLACED" && (
+                <button
+                  onClick={() => { handleConfirmOrder(reviewOrder.id); setReviewOrder(null); }}
+                  disabled={confirmingOrderId === reviewOrder.id}
+                  className="bg-emerald-600 px-4 py-2 text-xs font-medium uppercase tracking-wider text-white transition-opacity hover:opacity-90 disabled:opacity-50">
+                  {confirmingOrderId === reviewOrder.id ? "Confirming..." : "Confirm Order"}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
