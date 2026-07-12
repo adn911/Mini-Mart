@@ -74,7 +74,19 @@ class CartController {
     ResponseEntity<?> checkout(HttpSession session, @RequestBody(required = false) Map<String, Object> body) {
         try {
             String paymentMethod = body != null ? (String) body.get("paymentMethod") : null;
-            CustomerOrder order = cartService.checkout(session.getId(), paymentMethod);
+            CartService.ShippingAddress shipping = null;
+            if (body != null) {
+                shipping = new CartService.ShippingAddress(
+                    (String) body.get("firstName"),
+                    (String) body.get("lastName"),
+                    (String) body.get("addressLine"),
+                    (String) body.get("city"),
+                    (String) body.get("zipCode"),
+                    (String) body.get("phone1"),
+                    (String) body.get("phone2")
+                );
+            }
+            CustomerOrder order = cartService.checkout(session.getId(), paymentMethod, shipping);
             return ResponseEntity.ok(order);
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

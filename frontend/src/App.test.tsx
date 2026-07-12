@@ -170,6 +170,7 @@ describe("Mini-Mart storefront", () => {
         if (cartItems.length === 0) {
           return Promise.resolve(jsonResponse({ error: "Cart is empty" }, 400));
         }
+        const body = init?.body ? JSON.parse(init.body as string) : {};
         const orderItems = cartItems.map((ci) => ({
           id: ci.id,
           product: ci.product,
@@ -183,6 +184,12 @@ describe("Mini-Mart storefront", () => {
           items: orderItems,
           total,
           status: "PLACED",
+          firstName: body.firstName,
+          lastName: body.lastName,
+          addressLine: body.addressLine,
+          city: body.city,
+          zipCode: body.zipCode,
+          phone1: body.phone1,
           createdAt: new Date().toISOString(),
         }));
       }
@@ -389,11 +396,21 @@ describe("Mini-Mart storefront", () => {
     expect(screen.getByText("Confirm Order")).toBeInTheDocument();
     expect(screen.getByText("Go Back")).toBeInTheDocument();
 
+    await userEvent.type(screen.getByLabelText("First Name"), "Jane");
+    await userEvent.type(screen.getByLabelText("Last Name"), "Doe");
+    await userEvent.type(screen.getByLabelText("Address"), "456 Oak St");
+    await userEvent.type(screen.getByLabelText("City"), "Portland");
+    await userEvent.type(screen.getByLabelText("Zip Code"), "97201");
+    await userEvent.type(screen.getByLabelText("Phone"), "503-555-1234");
+
     await userEvent.click(screen.getByText("Confirm Order"));
 
     expect(await screen.findByText("Order Confirmed")).toBeInTheDocument();
     expect(screen.getByText(/Order #1/)).toBeInTheDocument();
     expect(screen.getByText("Cash on Delivery")).toBeInTheDocument();
+    expect(screen.getByText("Jane Doe")).toBeInTheDocument();
+    expect(screen.getByText("Portland 97201")).toBeInTheDocument();
+    expect(screen.getByText("503-555-1234")).toBeInTheDocument();
     expect(screen.getByText("Continue Shopping")).toBeInTheDocument();
   });
 
@@ -409,6 +426,13 @@ describe("Mini-Mart storefront", () => {
     await userEvent.click(screen.getByText("Checkout"));
 
     expect(await screen.findByText("Review Your Order")).toBeInTheDocument();
+
+    await userEvent.type(screen.getByLabelText("First Name"), "Jane");
+    await userEvent.type(screen.getByLabelText("Last Name"), "Doe");
+    await userEvent.type(screen.getByLabelText("Address"), "456 Oak St");
+    await userEvent.type(screen.getByLabelText("City"), "Portland");
+    await userEvent.type(screen.getByLabelText("Zip Code"), "97201");
+    await userEvent.type(screen.getByLabelText("Phone"), "503-555-1234");
 
     await userEvent.click(screen.getByText("Confirm Order"));
 

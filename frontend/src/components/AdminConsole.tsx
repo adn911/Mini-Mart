@@ -556,6 +556,8 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
                   <thead>
                     <tr className="border-b border-slate-200 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                       <th className="pb-3 pr-4">Order #</th>
+                      <th className="pb-3 pr-4">Name</th>
+                      <th className="pb-3 pr-4">City</th>
                       <th className="pb-3 pr-4">Session</th>
                       <th className="pb-3 pr-4">Status</th>
                       <th className="pb-3 pr-4">Payment</th>
@@ -568,6 +570,8 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
                     {orders.map((o) => (
                       <tr key={o.id} className="border-b border-slate-100">
                         <td className="py-3 pr-4 font-medium">#{o.id}</td>
+                        <td className="py-3 pr-4 text-slate-500">{(o.firstName ?? "") + " " + (o.lastName ?? "")}</td>
+                        <td className="py-3 pr-4 text-slate-500">{o.city ?? ""}</td>
                         <td className="py-3 pr-4 text-slate-500 font-mono text-[11px]">{(o.sessionId ?? "").substring(0, 16)}...</td>
                         <td className="py-3 pr-4">
                           <span className="text-xs uppercase tracking-wider text-slate-500">{o.status}</span>

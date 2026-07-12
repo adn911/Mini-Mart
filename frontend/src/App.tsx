@@ -15,6 +15,7 @@ import {
   type OrderResponse,
   type PageResponse,
   type Product,
+  type ShippingAddress,
 } from "./api";
 import AdminConsole from "./components/AdminConsole";
 import AdminLogin from "./components/AdminLogin";
@@ -58,6 +59,9 @@ function Storefront() {
   const [checkingOut, setCheckingOut] = useState(false);
   const [placedOrder, setPlacedOrder] = useState<OrderResponse | null>(null);
   const [confirmingOrder, setConfirmingOrder] = useState<CartItem[] | null>(null);
+  const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
+    firstName: "", lastName: "", addressLine: "", city: "", zipCode: "", phone1: "", phone2: "",
+  });
   const [cartExpired, setCartExpired] = useState(false);
 
   function refreshCart() {
@@ -127,7 +131,7 @@ function Storefront() {
   function handleConfirmOrder() {
     setCartError(undefined);
     setCheckingOut(true);
-    checkoutCart("CASH_ON_DELIVERY")
+    checkoutCart("CASH_ON_DELIVERY", shippingAddress)
       .then((order) => {
         setPlacedOrder(order);
         setConfirmingOrder(null);
@@ -164,6 +168,8 @@ function Storefront() {
         <OrderConfirmation
           items={confirmingOrder}
           total={total}
+          shippingAddress={shippingAddress}
+          onShippingAddressChange={setShippingAddress}
           onConfirmOrder={handleConfirmOrder}
           onGoBack={handleGoBack}
           confirming={checkingOut}

@@ -271,6 +271,16 @@ export type OrderItemResponse = {
   unitPrice: number;
 };
 
+export type ShippingAddress = {
+  firstName: string;
+  lastName: string;
+  addressLine: string;
+  city: string;
+  zipCode: string;
+  phone1: string;
+  phone2?: string;
+};
+
 export type OrderResponse = {
   id: number;
   sessionId?: string;
@@ -278,14 +288,21 @@ export type OrderResponse = {
   total: number;
   status: string;
   paymentMethod?: string;
+  firstName?: string;
+  lastName?: string;
+  addressLine?: string;
+  city?: string;
+  zipCode?: string;
+  phone1?: string;
+  phone2?: string;
   createdAt: string;
 };
 
-export async function checkoutCart(paymentMethod?: string): Promise<OrderResponse> {
+export async function checkoutCart(paymentMethod: string, shipping: ShippingAddress): Promise<OrderResponse> {
   const response = await fetch("/api/cart/checkout", {
     method: "POST",
-    headers: paymentMethod ? { "Content-Type": "application/json" } : undefined,
-    body: paymentMethod ? JSON.stringify({ paymentMethod }) : undefined,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ paymentMethod, ...shipping }),
   });
   if (!response.ok) {
     const body = await response.json() as { error: string };

@@ -168,8 +168,13 @@ public class CartService {
         }
     }
 
+    public record ShippingAddress(
+        String firstName, String lastName, String addressLine,
+        String city, String zipCode, String phone1, String phone2
+    ) {}
+
     @Transactional
-    public CustomerOrder checkout(String sessionId, String paymentMethod) {
+    public CustomerOrder checkout(String sessionId, String paymentMethod, ShippingAddress shipping) {
         Cart cart = cartRepository.findBySessionIdAndStatus(sessionId, CartStatus.ACTIVE).orElse(null);
         if (cart == null) {
             if (cartRepository.findBySessionIdAndStatus(sessionId, CartStatus.EXPIRED).isPresent()) {
@@ -184,6 +189,15 @@ public class CartService {
         CustomerOrder order = new CustomerOrder();
         order.setSessionId(sessionId);
         if (paymentMethod != null) order.setPaymentMethod(paymentMethod);
+        if (shipping != null) {
+            order.setFirstName(shipping.firstName());
+            order.setLastName(shipping.lastName());
+            order.setAddressLine(shipping.addressLine());
+            order.setCity(shipping.city());
+            order.setZipCode(shipping.zipCode());
+            order.setPhone1(shipping.phone1());
+            order.setPhone2(shipping.phone2());
+        }
 
         BigDecimal total = BigDecimal.ZERO;
 

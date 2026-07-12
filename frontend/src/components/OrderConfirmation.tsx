@@ -1,9 +1,11 @@
-import { type CartItem, type OrderResponse } from "../api";
+import { type CartItem, type OrderResponse, type ShippingAddress } from "../api";
 
 type OrderConfirmationProps = {
   items?: CartItem[];
   total?: number;
   order?: OrderResponse;
+  shippingAddress?: ShippingAddress;
+  onShippingAddressChange?: (address: ShippingAddress) => void;
   onConfirmOrder?: () => void;
   onGoBack?: () => void;
   onContinueShopping?: () => void;
@@ -11,10 +13,74 @@ type OrderConfirmationProps = {
   error?: string;
 };
 
+function AddressForm({
+  address,
+  onChange,
+}: {
+  address: ShippingAddress;
+  onChange: (address: ShippingAddress) => void;
+}) {
+  function set(field: keyof ShippingAddress, value: string) {
+    onChange({ ...address, [field]: value });
+  }
+
+  const fields: { key: keyof ShippingAddress; label: string }[] = [
+    { key: "firstName", label: "First Name" },
+    { key: "lastName", label: "Last Name" },
+    { key: "addressLine", label: "Address" },
+    { key: "city", label: "City" },
+    { key: "zipCode", label: "Zip Code" },
+    { key: "phone1", label: "Phone" },
+    { key: "phone2", label: "Phone 2" },
+  ];
+
+  return (
+    <div className="rounded-lg border border-slate-200">
+      <div className="border-b border-slate-200 px-6 py-4">
+        <h3 className="text-xs font-medium uppercase tracking-wider text-slate-500">Shipping Address</h3>
+      </div>
+      <div className="px-6 py-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {fields.map((f) => (
+            <div key={f.key} className={f.key === "addressLine" ? "sm:col-span-2" : ""}>
+              <label htmlFor={f.key} className="mb-1 block text-xs font-medium text-slate-500">{f.label}</label>
+              <input
+                id={f.key}
+                type="text"
+                value={address[f.key]}
+                onChange={(e) => set(f.key, e.target.value)}
+                className="w-full border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddressDisplay({ order }: { order: OrderResponse }) {
+  return (
+    <div className="rounded-lg border border-slate-200">
+      <div className="border-b border-slate-200 px-6 py-4">
+        <h3 className="text-xs font-medium uppercase tracking-wider text-slate-500">Shipping Address</h3>
+      </div>
+      <div className="px-6 py-4 text-sm text-slate-700 space-y-1">
+        <p className="font-medium text-slate-900">{order.firstName ?? ""} {order.lastName ?? ""}</p>
+        <p>{order.addressLine ?? ""}</p>
+        <p>{order.city ?? ""} {order.zipCode ?? ""}</p>
+        <p>{order.phone1 ?? ""}{order.phone2 ? `  |  ${order.phone2}` : ""}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function OrderConfirmation({
   items = [],
   total = 0,
   order,
+  shippingAddress,
+  onShippingAddressChange,
   onConfirmOrder,
   onGoBack,
   onContinueShopping,
@@ -34,18 +100,78 @@ export default function OrderConfirmation({
           <p className="mt-1 text-sm text-slate-500">Thank you for your purchase!</p>
         </div>
 
-        <div className="rounded-lg border border-slate-200">
-          <div className="border-b border-slate-200 px-6 py-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-slate-900">Order #{order.id}</span>
-              <span className="text-xs uppercase tracking-wider text-slate-500">{order.status}</span>
+        <div className="space-y-4">
+          <div className="rounded-lg border border-slate-200">
+            <div className="border-b border-slate-200 px-6 py-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-slate-900">Order #{order.id}</span>
+                <span className="text-xs uppercase tracking-wider text-slate-500">{order.status}</span>
+              </div>
+            </div>
+
+            <div className="border-b border-slate-200 px-6 py-4">
+              <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-500">Items</h3>
+              <ul className="divide-y divide-slate-100">
+                {order.items.map((item) => (
+                  <li key={item.id} className="flex items-center gap-3 py-2">
+                    <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded bg-slate-50">
+                      <img src={item.product.imageUrl} alt={item.product.name}
+                        className="h-full w-full object-cover" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-slate-900">{item.product.name}</p>
+                      <p className="text-xs text-slate-400">Qty: {item.quantity} &times; ${item.unitPrice.toFixed(2)}</p>
+                    </div>
+                    <p className="text-sm font-medium text-slate-900">${(item.quantity * item.unitPrice).toFixed(2)}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="border-b border-slate-200 px-6 py-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-500">Payment Method</span>
+                <span className="font-medium text-slate-900">Cash on Delivery</span>
+              </div>
+            </div>
+
+            <div className="px-6 py-4">
+              <div className="flex items-center justify-between text-base font-semibold text-slate-900">
+                <span>Total</span>
+                <span>${order.total.toFixed(2)}</span>
+              </div>
             </div>
           </div>
 
+          {order.firstName && <AddressDisplay order={order} />}
+        </div>
+
+        <div className="mt-6 text-center">
+          <button onClick={onContinueShopping}
+            className="bg-slate-900 px-6 py-2.5 text-xs font-medium uppercase tracking-wider text-white transition-opacity hover:opacity-90">
+            Continue Shopping
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const requiredFields: (keyof ShippingAddress)[] = ["firstName", "lastName", "addressLine", "city", "zipCode", "phone1"];
+  const addressValid = shippingAddress && requiredFields.every(f => (shippingAddress[f] ?? "").trim().length > 0);
+
+  return (
+    <div className="mx-auto max-w-2xl px-6 py-12">
+      <h1 className="mb-8 text-center text-2xl font-semibold tracking-tight text-slate-900">Review Your Order</h1>
+
+      <div className="space-y-6">
+        <div className="rounded-lg border border-slate-200">
           <div className="border-b border-slate-200 px-6 py-4">
-            <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-500">Items</h3>
+            <h3 className="text-xs font-medium uppercase tracking-wider text-slate-500">Items ({items.length})</h3>
+          </div>
+
+          <div className="px-6 py-4">
             <ul className="divide-y divide-slate-100">
-              {order.items.map((item) => (
+              {items.map((item) => (
                 <li key={item.id} className="flex items-center gap-3 py-2">
                   <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded bg-slate-50">
                     <img src={item.product.imageUrl} alt={item.product.name}
@@ -53,9 +179,9 @@ export default function OrderConfirmation({
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-slate-900">{item.product.name}</p>
-                    <p className="text-xs text-slate-400">Qty: {item.quantity} &times; ${item.unitPrice.toFixed(2)}</p>
+                    <p className="text-xs text-slate-400">Qty: {item.quantity} &times; ${item.product.price.toFixed(2)}</p>
                   </div>
-                  <p className="text-sm font-medium text-slate-900">${(item.quantity * item.unitPrice).toFixed(2)}</p>
+                  <p className="text-sm font-medium text-slate-900">${(item.quantity * item.product.price).toFixed(2)}</p>
                 </li>
               ))}
             </ul>
@@ -71,61 +197,14 @@ export default function OrderConfirmation({
           <div className="px-6 py-4">
             <div className="flex items-center justify-between text-base font-semibold text-slate-900">
               <span>Total</span>
-              <span>${order.total.toFixed(2)}</span>
+              <span>${total.toFixed(2)}</span>
             </div>
           </div>
         </div>
 
-        <div className="mt-6 text-center">
-          <button onClick={onContinueShopping}
-            className="bg-slate-900 px-6 py-2.5 text-xs font-medium uppercase tracking-wider text-white transition-opacity hover:opacity-90">
-            Continue Shopping
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="mx-auto max-w-2xl px-6 py-12">
-      <h1 className="mb-8 text-center text-2xl font-semibold tracking-tight text-slate-900">Review Your Order</h1>
-
-      <div className="rounded-lg border border-slate-200">
-        <div className="border-b border-slate-200 px-6 py-4">
-          <h3 className="text-xs font-medium uppercase tracking-wider text-slate-500">Items ({items.length})</h3>
-        </div>
-
-        <div className="px-6 py-4">
-          <ul className="divide-y divide-slate-100">
-            {items.map((item) => (
-              <li key={item.id} className="flex items-center gap-3 py-2">
-                <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded bg-slate-50">
-                  <img src={item.product.imageUrl} alt={item.product.name}
-                    className="h-full w-full object-cover" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-slate-900">{item.product.name}</p>
-                  <p className="text-xs text-slate-400">Qty: {item.quantity} &times; ${item.product.price.toFixed(2)}</p>
-                </div>
-                <p className="text-sm font-medium text-slate-900">${(item.quantity * item.product.price).toFixed(2)}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="border-b border-slate-200 px-6 py-4">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-slate-500">Payment Method</span>
-            <span className="font-medium text-slate-900">Cash on Delivery</span>
-          </div>
-        </div>
-
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between text-base font-semibold text-slate-900">
-            <span>Total</span>
-            <span>${total.toFixed(2)}</span>
-          </div>
-        </div>
+        {shippingAddress && onShippingAddressChange && (
+          <AddressForm address={shippingAddress} onChange={onShippingAddressChange} />
+        )}
       </div>
 
       {error && (
@@ -135,7 +214,7 @@ export default function OrderConfirmation({
       )}
 
       <div className="mt-6 flex flex-col items-center gap-3">
-        <button onClick={onConfirmOrder} disabled={confirming}
+        <button onClick={onConfirmOrder} disabled={confirming || !addressValid}
           className="w-full bg-slate-900 py-2.5 text-xs font-medium uppercase tracking-wider text-white transition-opacity hover:opacity-90 disabled:opacity-50">
           {confirming ? "Placing Order..." : "Confirm Order"}
         </button>
