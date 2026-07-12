@@ -85,7 +85,10 @@ function AddressForm({
             const err = errors[f.key];
             return (
               <div key={f.key} className={f.key === "addressLine" ? "sm:col-span-2" : ""}>
-                <label htmlFor={f.key} className="mb-1 block text-xs font-medium text-slate-500">{f.label}</label>
+                <div className="mb-1 flex items-center gap-0.5">
+                  <label htmlFor={f.key} className="text-xs font-medium text-slate-500">{f.label}</label>
+                  {requiredFields.includes(f.key) && <span className="text-red-500">*</span>}
+                </div>
                 {f.key === "city" ? (
                   <select
                     id={f.key}
