@@ -399,8 +399,8 @@ describe("Mini-Mart storefront", () => {
     await userEvent.type(screen.getByLabelText("First Name"), "Jane");
     await userEvent.type(screen.getByLabelText("Last Name"), "Doe");
     await userEvent.type(screen.getByLabelText("Address"), "456 Oak St");
-    await userEvent.type(screen.getByLabelText("City"), "Portland");
-    await userEvent.type(screen.getByLabelText("Zip Code"), "97201");
+    await userEvent.selectOptions(screen.getByLabelText("City"), "Dhaka");
+    await userEvent.type(screen.getByLabelText("Zip Code"), "1205");
     await userEvent.type(screen.getByLabelText("Phone"), "503-555-1234");
 
     await userEvent.click(screen.getByText("Confirm Order"));
@@ -409,7 +409,7 @@ describe("Mini-Mart storefront", () => {
     expect(screen.getByText(/Order #1/)).toBeInTheDocument();
     expect(screen.getByText("Cash on Delivery")).toBeInTheDocument();
     expect(screen.getByText("Jane Doe")).toBeInTheDocument();
-    expect(screen.getByText("Portland 97201")).toBeInTheDocument();
+    expect(screen.getByText("Dhaka 1205")).toBeInTheDocument();
     expect(screen.getByText("503-555-1234")).toBeInTheDocument();
     expect(screen.getByText("Continue Shopping")).toBeInTheDocument();
   });
@@ -430,8 +430,8 @@ describe("Mini-Mart storefront", () => {
     await userEvent.type(screen.getByLabelText("First Name"), "Jane");
     await userEvent.type(screen.getByLabelText("Last Name"), "Doe");
     await userEvent.type(screen.getByLabelText("Address"), "456 Oak St");
-    await userEvent.type(screen.getByLabelText("City"), "Portland");
-    await userEvent.type(screen.getByLabelText("Zip Code"), "97201");
+    await userEvent.selectOptions(screen.getByLabelText("City"), "Dhaka");
+    await userEvent.type(screen.getByLabelText("Zip Code"), "1205");
     await userEvent.type(screen.getByLabelText("Phone"), "503-555-1234");
 
     await userEvent.click(screen.getByText("Confirm Order"));

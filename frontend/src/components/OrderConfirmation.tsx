@@ -16,6 +16,19 @@ type OrderConfirmationProps = {
 
 type FieldErrors = Partial<Record<keyof ShippingAddress, string>>;
 
+const BANGLADESH_DISTRICTS = [
+  "Dhaka", "Faridpur", "Gazipur", "Gopalganj", "Kishoreganj", "Madaripur",
+  "Manikganj", "Munshiganj", "Narayanganj", "Narsingdi", "Rajbari", "Shariatpur", "Tangail",
+  "Bandarban", "Brahmanbaria", "Chandpur", "Chattogram", "Cumilla", "Cox's Bazar",
+  "Feni", "Khagrachari", "Lakshmipur", "Noakhali", "Rangamati",
+  "Bogura", "Joypurhat", "Naogaon", "Natore", "Chapai Nawabganj", "Pabna", "Rajshahi", "Sirajganj",
+  "Bagerhat", "Chuadanga", "Jashore", "Jhenaidah", "Khulna", "Kushtia", "Magura", "Meherpur", "Narail", "Satkhira",
+  "Barguna", "Barisal", "Bhola", "Jhalokati", "Patuakhali", "Pirojpur",
+  "Habiganj", "Moulvibazar", "Sunamganj", "Sylhet",
+  "Dinajpur", "Gaibandha", "Kurigram", "Lalmonirhat", "Nilphamari", "Panchagarh", "Rangpur", "Thakurgaon",
+  "Jamalpur", "Mymensingh", "Netrokona", "Sherpur",
+];
+
 const requiredFields: (keyof ShippingAddress)[] = ["firstName", "lastName", "addressLine", "city", "zipCode", "phone1"];
 const fieldLabels: Record<keyof ShippingAddress, string> = {
   firstName: "First Name", lastName: "Last Name", addressLine: "Address",
@@ -67,15 +80,31 @@ function AddressForm({
             return (
               <div key={f.key} className={f.key === "addressLine" ? "sm:col-span-2" : ""}>
                 <label htmlFor={f.key} className="mb-1 block text-xs font-medium text-slate-500">{f.label}</label>
-                <input
-                  id={f.key}
-                  type="text"
-                  value={address[f.key]}
-                  onChange={(e) => set(f.key, e.target.value)}
-                  className={`w-full border px-3 py-2 text-sm focus:outline-none ${
-                    err ? "border-red-400 focus:border-red-500" : "border-slate-200 focus:border-slate-400"
-                  }`}
-                />
+                {f.key === "city" ? (
+                  <select
+                    id={f.key}
+                    value={address[f.key]}
+                    onChange={(e) => set(f.key, e.target.value)}
+                    className={`w-full border px-3 py-2 text-sm focus:outline-none ${
+                      err ? "border-red-400 focus:border-red-500" : "border-slate-200 focus:border-slate-400"
+                    }`}
+                  >
+                    <option value="">Select a district</option>
+                    {BANGLADESH_DISTRICTS.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    id={f.key}
+                    type="text"
+                    value={address[f.key]}
+                    onChange={(e) => set(f.key, e.target.value)}
+                    className={`w-full border px-3 py-2 text-sm focus:outline-none ${
+                      err ? "border-red-400 focus:border-red-500" : "border-slate-200 focus:border-slate-400"
+                    }`}
+                  />
+                )}
                 {err && <p className="mt-1 text-xs text-red-500">{err}</p>}
               </div>
             );
