@@ -42,6 +42,12 @@ function validateAddress(address: ShippingAddress): FieldErrors {
       errors[f] = `${fieldLabels[f]} is required`;
     }
   }
+  for (const f of ["phone1", "phone2"] as (keyof ShippingAddress)[]) {
+    const val = (address[f] ?? "").trim();
+    if (val && !/^\d{11}$/.test(val)) {
+      errors[f] = "Must be exactly 11 digits";
+    }
+  }
   return errors;
 }
 
@@ -97,9 +103,10 @@ function AddressForm({
                 ) : (
                   <input
                     id={f.key}
-                    type="text"
+                    type={f.key === "phone1" || f.key === "phone2" ? "tel" : "text"}
                     value={address[f.key]}
                     onChange={(e) => set(f.key, e.target.value)}
+                    placeholder={f.key === "phone1" || f.key === "phone2" ? "017xxxxxxxx" : undefined}
                     className={`w-full border px-3 py-2 text-sm focus:outline-none ${
                       err ? "border-red-400 focus:border-red-500" : "border-slate-200 focus:border-slate-400"
                     }`}
