@@ -57,6 +57,7 @@ function Storefront() {
   const [cartError, setCartError] = useState<string | undefined>();
   const [checkingOut, setCheckingOut] = useState(false);
   const [placedOrder, setPlacedOrder] = useState<OrderResponse | null>(null);
+  const [confirmingOrder, setConfirmingOrder] = useState<CartItem[] | null>(null);
   const [cartExpired, setCartExpired] = useState(false);
 
   function refreshCart() {
@@ -119,21 +120,57 @@ function Storefront() {
 
   function handleCheckout() {
     setCartError(undefined);
-    setCheckingOut(true);
     setCartOpen(false);
+    setConfirmingOrder([...cart.items]);
+  }
+
+  function handleConfirmOrder() {
+    setCartError(undefined);
+    setCheckingOut(true);
     checkoutCart("CASH_ON_DELIVERY")
       .then((order) => {
         setPlacedOrder(order);
+        setConfirmingOrder(null);
         setCart({ items: [], itemCount: 0 });
       })
       .catch((err: Error) => setCartError(err.message))
       .finally(() => setCheckingOut(false));
   }
 
+  function handleGoBack() {
+    setConfirmingOrder(null);
+    setCartOpen(false);
+    refreshCart();
+  }
+
   function handleContinueShopping() {
     setPlacedOrder(null);
     setCartOpen(false);
     refreshCart();
+  }
+
+  if (confirmingOrder) {
+    const total = confirmingOrder.reduce(
+      (sum, item) => sum + item.product.price * item.quantity,
+      0,
+    );
+    return (
+      <div className="min-h-screen bg-white text-slate-900">
+        <header className="border-b border-slate-200">
+          <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+            <h1 className="text-xl font-semibold tracking-tight">Mini-Mart</h1>
+          </div>
+        </header>
+        <OrderConfirmation
+          items={confirmingOrder}
+          total={total}
+          onConfirmOrder={handleConfirmOrder}
+          onGoBack={handleGoBack}
+          confirming={checkingOut}
+          error={cartError}
+        />
+      </div>
+    );
   }
 
   if (placedOrder) {

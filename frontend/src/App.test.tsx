@@ -385,6 +385,12 @@ describe("Mini-Mart storefront", () => {
 
     await userEvent.click(screen.getByText("Checkout"));
 
+    expect(await screen.findByText("Review Your Order")).toBeInTheDocument();
+    expect(screen.getByText("Confirm Order")).toBeInTheDocument();
+    expect(screen.getByText("Go Back")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByText("Confirm Order"));
+
     expect(await screen.findByText("Order Confirmed")).toBeInTheDocument();
     expect(screen.getByText(/Order #1/)).toBeInTheDocument();
     expect(screen.getByText("Cash on Delivery")).toBeInTheDocument();
@@ -401,6 +407,10 @@ describe("Mini-Mart storefront", () => {
     await screen.findByText("$4.99 each");
 
     await userEvent.click(screen.getByText("Checkout"));
+
+    expect(await screen.findByText("Review Your Order")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByText("Confirm Order"));
 
     expect(await screen.findByText("Cart is empty")).toBeInTheDocument();
   });
