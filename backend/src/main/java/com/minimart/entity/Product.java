@@ -1,5 +1,6 @@
 package com.minimart.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -8,10 +9,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Entity
 @Table(name = "products")
@@ -30,6 +31,8 @@ public class Product {
     private Integer stockQuantity;
 
     private int reservedQuantity;
+
+    private Integer discountPercent;
 
     private String imageUrl;
 
@@ -61,6 +64,23 @@ public class Product {
 
     public int getReservedQuantity() { return reservedQuantity; }
     public void setReservedQuantity(int reservedQuantity) { this.reservedQuantity = reservedQuantity; }
+
+    public Integer getDiscountPercent() { return discountPercent; }
+    public void setDiscountPercent(Integer discountPercent) { this.discountPercent = discountPercent; }
+
+    @Transient
+    public BigDecimal getEffectivePrice() {
+        if (discountPercent != null && discountPercent > 0) {
+            return price.multiply(BigDecimal.valueOf(100 - discountPercent))
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        }
+        return price;
+    }
+
+    @Transient
+    public boolean isOnSale() {
+        return discountPercent != null && discountPercent > 0;
+    }
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }

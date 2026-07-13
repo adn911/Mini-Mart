@@ -10,11 +10,19 @@ const pantry = { id: 3, name: "Pantry", status: "ACTIVE" };
 
 const mockCategories = [beverages, snacks, pantry];
 
+const baseProduct = {
+  discountPercent: 0,
+  effectivePrice: 0,
+  onSale: false,
+};
+
 const sparklingWater = {
+  ...baseProduct,
   id: 1,
   name: "Sparkling Water",
   description: "Premium sparkling mineral water",
   price: 4.99,
+  effectivePrice: 4.99,
   stockQuantity: 100,
   reservedQuantity: 0,
   availableQuantity: 100,
@@ -24,10 +32,12 @@ const sparklingWater = {
 };
 
 const darkChocolate = {
+  ...baseProduct,
   id: 2,
   name: "Dark Chocolate Bar",
   description: "72% cacao dark chocolate",
   price: 4.49,
+  effectivePrice: 4.49,
   stockQuantity: 3,
   reservedQuantity: 0,
   availableQuantity: 3,
@@ -37,10 +47,12 @@ const darkChocolate = {
 };
 
 const chips = {
+  ...baseProduct,
   id: 3,
   name: "Chips",
   description: "Potato chips, 8oz",
   price: 3.99,
+  effectivePrice: 3.99,
   stockQuantity: 50,
   reservedQuantity: 0,
   availableQuantity: 50,

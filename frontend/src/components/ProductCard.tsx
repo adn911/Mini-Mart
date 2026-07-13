@@ -10,13 +10,18 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
 
   return (
     <div className="group flex flex-col border border-slate-200 bg-white transition-shadow hover:shadow-sm">
-      <div className="aspect-square overflow-hidden bg-slate-50">
+      <div className="relative aspect-square overflow-hidden bg-slate-50">
         <img
           src={product.imageUrl}
           alt={product.name}
           className="h-full w-full object-cover transition-opacity group-hover:opacity-90"
           loading="lazy"
         />
+        {product.onSale && (
+          <span className="absolute left-2 top-2 rounded bg-red-500 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-white">
+            -{product.discountPercent}%
+          </span>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-2 p-4">
@@ -31,9 +36,16 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
         </p>
 
         <div className="mt-auto flex items-center justify-between pt-2">
-          <span className="text-lg font-semibold text-slate-900">
-            ${product.price.toFixed(2)}
-          </span>
+          <div className="flex items-baseline gap-1.5">
+            {product.onSale ? (
+              <>
+                <span className="text-lg font-semibold text-red-600">${product.effectivePrice.toFixed(2)}</span>
+                <span className="text-sm text-slate-400 line-through">${product.price.toFixed(2)}</span>
+              </>
+            ) : (
+              <span className="text-lg font-semibold text-slate-900">${product.price.toFixed(2)}</span>
+            )}
+          </div>
 
           <button
             onClick={() => onAddToCart(product.id)}

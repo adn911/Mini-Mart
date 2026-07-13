@@ -29,7 +29,7 @@ export default function CartPanel({
 }: CartPanelProps) {
   if (placedOrder) return null;
   const total = items.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
+    (sum, item) => sum + item.product.effectivePrice * item.quantity,
     0,
   );
 
@@ -90,7 +90,14 @@ export default function CartPanel({
                         {item.product.name}
                       </h3>
                       <p className="text-xs text-slate-400">
-                        ${item.product.price.toFixed(2)} each
+                        {item.product.onSale ? (
+                          <>
+                            <span className="text-red-500">${item.product.effectivePrice.toFixed(2)}</span>
+                            <span className="ml-1 text-slate-300 line-through">${item.product.price.toFixed(2)}</span>
+                          </>
+                        ) : (
+                          <>${item.product.price.toFixed(2)}</>
+                        )} each
                       </p>
                     </div>
                     <div className="flex items-center gap-2">

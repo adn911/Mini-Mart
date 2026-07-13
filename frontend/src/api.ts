@@ -9,6 +9,9 @@ export type Product = {
   name: string;
   description: string;
   price: number;
+  discountPercent?: number;
+  effectivePrice: number;
+  onSale: boolean;
   stockQuantity: number;
   reservedQuantity: number;
   availableQuantity: number;

@@ -178,19 +178,24 @@ export default function OrderConfirmation({
             <div className="border-b border-slate-200 px-6 py-4">
               <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-500">Items</h3>
               <ul className="divide-y divide-slate-100">
-                {order.items.map((item) => (
-                  <li key={item.id} className="flex items-center gap-3 py-2">
-                    <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded bg-slate-50">
-                      <img src={item.product.imageUrl} alt={item.product.name}
-                        className="h-full w-full object-cover" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-slate-900">{item.product.name}</p>
-                      <p className="text-xs text-slate-400">Qty: {item.quantity} &times; ${item.unitPrice.toFixed(2)}</p>
-                    </div>
-                    <p className="text-sm font-medium text-slate-900">${(item.quantity * item.unitPrice).toFixed(2)}</p>
-                  </li>
-                ))}
+                  {order.items.map((item) => (
+                    <li key={item.id} className="flex items-center gap-3 py-2">
+                      <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded bg-slate-50">
+                        <img src={item.product.imageUrl} alt={item.product.name}
+                          className="h-full w-full object-cover" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-slate-900">{item.product.name}</p>
+                        <p className="text-xs text-slate-400">
+                          Qty: {item.quantity} &times; ${item.unitPrice.toFixed(2)}
+                          {item.product.onSale && (
+                            <span className="ml-1 text-slate-300 line-through">${item.product.price.toFixed(2)}</span>
+                          )}
+                        </p>
+                      </div>
+                      <p className="text-sm font-medium text-slate-900">${(item.quantity * item.unitPrice).toFixed(2)}</p>
+                    </li>
+                  ))}
               </ul>
             </div>
 
@@ -257,9 +262,9 @@ export default function OrderConfirmation({
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-slate-900">{item.product.name}</p>
-                    <p className="text-xs text-slate-400">Qty: {item.quantity} &times; ${item.product.price.toFixed(2)}</p>
+                    <p className="text-xs text-slate-400">Qty: {item.quantity} &times; ${item.product.effectivePrice.toFixed(2)}</p>
                   </div>
-                  <p className="text-sm font-medium text-slate-900">${(item.quantity * item.product.price).toFixed(2)}</p>
+                  <p className="text-sm font-medium text-slate-900">${(item.quantity * item.product.effectivePrice).toFixed(2)}</p>
                 </li>
               ))}
             </ul>

@@ -211,10 +211,11 @@ public class CartService {
             product.setReservedQuantity(product.getReservedQuantity() - item.getQuantity());
             productRepository.save(product);
 
-            OrderItem orderItem = new OrderItem(order, product, item.getQuantity(), product.getPrice());
+            BigDecimal unitPrice = product.getEffectivePrice();
+            OrderItem orderItem = new OrderItem(order, product, item.getQuantity(), unitPrice);
             order.getItems().add(orderItem);
 
-            total = total.add(product.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+            total = total.add(unitPrice.multiply(BigDecimal.valueOf(item.getQuantity())));
         }
 
         order.setTotal(total);

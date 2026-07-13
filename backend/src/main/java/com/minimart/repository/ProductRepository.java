@@ -12,6 +12,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByStatus(com.minimart.entity.EntityStatus status);
 
+    java.util.Optional<Product> findByName(String name);
+
     @Query(value = """
         SELECT p FROM Product p
         WHERE p.status = 'ACTIVE'

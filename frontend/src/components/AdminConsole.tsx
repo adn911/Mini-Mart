@@ -41,6 +41,7 @@ function ProductForm({
   const [name, setName] = useState(product?.name ?? "");
   const [description, setDescription] = useState(product?.description ?? "");
   const [price, setPrice] = useState(String(product?.price ?? ""));
+  const [discountPercent, setDiscountPercent] = useState(String(product?.discountPercent ?? ""));
   const [stockQuantity, setStockQuantity] = useState(String(product?.stockQuantity ?? ""));
   const [categoryId, setCategoryId] = useState(String(product?.category?.id ?? ""));
   const [saving, setSaving] = useState(false);
@@ -55,6 +56,7 @@ function ProductForm({
       name,
       description,
       price: parseFloat(price),
+      discountPercent: discountPercent ? parseInt(discountPercent) : undefined,
       stockQuantity: parseInt(stockQuantity) || 0,
       category: categoryId ? { id: parseInt(categoryId) } as Category : undefined,
     });
@@ -98,6 +100,11 @@ function ProductForm({
         <div className="flex-1">
           <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-slate-500">Stock</label>
           <input type="number" value={stockQuantity} onChange={(e) => setStockQuantity(e.target.value)} required
+            className="w-full border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none" />
+        </div>
+        <div className="flex-1">
+          <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-slate-500">Discount %</label>
+          <input type="number" min="0" max="100" value={discountPercent} onChange={(e) => setDiscountPercent(e.target.value)}
             className="w-full border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none" />
         </div>
       </div>
@@ -400,6 +407,7 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
                           <th className="pb-3 pr-4">Name</th>
                           <th className="pb-3 pr-4">Category</th>
                           <th className="pb-3 pr-4">Price</th>
+                          <th className="pb-3 pr-4">Disc.</th>
                           <th className="pb-3 pr-4">Stock</th>
                           <th className="pb-3 pr-4">Reserved</th>
                           <th className="pb-3 pr-4">Available</th>
@@ -421,6 +429,7 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
                             <td className="py-3 pr-4 font-medium">{p.name}</td>
                             <td className="py-3 pr-4 text-slate-500">{p.category?.name ?? "—"}</td>
                             <td className="py-3 pr-4">${p.price.toFixed(2)}</td>
+                            <td className="py-3 pr-4 text-xs text-slate-500">{p.onSale ? `-${p.discountPercent}%` : "—"}</td>
                             <td className={`py-3 pr-4 ${p.availableQuantity < LOW_STOCK_THRESHOLD ? "text-amber-600" : ""}`}>
                               {p.stockQuantity}
                               {p.availableQuantity < LOW_STOCK_THRESHOLD && p.status === "ACTIVE" && (
