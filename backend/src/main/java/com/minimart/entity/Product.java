@@ -12,7 +12,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 @Entity
 @Table(name = "products")
@@ -32,7 +31,7 @@ public class Product {
 
     private int reservedQuantity;
 
-    private Integer discountPercent;
+    private BigDecimal discountPrice;
 
     private String imageUrl;
 
@@ -65,21 +64,20 @@ public class Product {
     public int getReservedQuantity() { return reservedQuantity; }
     public void setReservedQuantity(int reservedQuantity) { this.reservedQuantity = reservedQuantity; }
 
-    public Integer getDiscountPercent() { return discountPercent; }
-    public void setDiscountPercent(Integer discountPercent) { this.discountPercent = discountPercent; }
+    public BigDecimal getDiscountPrice() { return discountPrice; }
+    public void setDiscountPrice(BigDecimal discountPrice) { this.discountPrice = discountPrice; }
 
     @Transient
     public BigDecimal getEffectivePrice() {
-        if (discountPercent != null && discountPercent > 0) {
-            return price.multiply(BigDecimal.valueOf(100 - discountPercent))
-                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        if (discountPrice != null && discountPrice.compareTo(BigDecimal.ZERO) > 0) {
+            return price.subtract(discountPrice);
         }
         return price;
     }
 
     @Transient
     public boolean isOnSale() {
-        return discountPercent != null && discountPercent > 0;
+        return discountPrice != null && discountPrice.compareTo(BigDecimal.ZERO) > 0;
     }
 
     public String getImageUrl() { return imageUrl; }

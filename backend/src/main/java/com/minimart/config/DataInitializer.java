@@ -77,11 +77,11 @@ public class DataInitializer implements CommandLineRunner {
         productRepository.save(createProduct("Atlantic Salmon", "Fresh Atlantic salmon fillet, 8oz", new BigDecimal("12.99"), 30, meat, "https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=400&h=400&fit=crop"));
         productRepository.save(createProduct("Ground Beef", "85/15 lean ground beef, 1lb", new BigDecimal("7.49"), 60, meat, "https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=400&h=400&fit=crop"));
 
-        productRepository.findByName("Sparkling Water").ifPresent(p -> { p.setDiscountPercent(15); productRepository.save(p); });
-        productRepository.findByName("Dark Chocolate Bar").ifPresent(p -> { p.setDiscountPercent(20); productRepository.save(p); });
-        productRepository.findByName("Whole Milk").ifPresent(p -> { p.setDiscountPercent(10); productRepository.save(p); });
-        productRepository.findByName("Croissants").ifPresent(p -> { p.setDiscountPercent(25); productRepository.save(p); });
-        productRepository.findByName("Frozen Pizza").ifPresent(p -> { p.setDiscountPercent(30); productRepository.save(p); });
+        productRepository.findByName("Sparkling Water").ifPresent(p -> { p.setDiscountPrice(new BigDecimal("1.00")); productRepository.save(p); });
+        productRepository.findByName("Dark Chocolate Bar").ifPresent(p -> { p.setDiscountPrice(new BigDecimal("1.00")); productRepository.save(p); });
+        productRepository.findByName("Whole Milk").ifPresent(p -> { p.setDiscountPrice(new BigDecimal("0.70")); productRepository.save(p); });
+        productRepository.findByName("Croissants").ifPresent(p -> { p.setDiscountPrice(new BigDecimal("1.50")); productRepository.save(p); });
+        productRepository.findByName("Frozen Pizza").ifPresent(p -> { p.setDiscountPrice(new BigDecimal("2.00")); productRepository.save(p); });
     }
 
     private Product createProduct(String name, String description, BigDecimal price, int stockQuantity, Category category, String imageUrl) {

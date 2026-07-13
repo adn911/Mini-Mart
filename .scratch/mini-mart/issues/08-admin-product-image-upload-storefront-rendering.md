@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 
 # Admin product image upload and storefront rendering
 

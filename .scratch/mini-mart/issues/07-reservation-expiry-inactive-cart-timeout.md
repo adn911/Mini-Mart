@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 
 # Reservation expiry and inactive cart timeout
 

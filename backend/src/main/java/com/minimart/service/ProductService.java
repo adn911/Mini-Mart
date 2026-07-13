@@ -71,7 +71,7 @@ public class ProductService {
         }
         if (update.getImageUrl() != null) existing.setImageUrl(update.getImageUrl());
         if (update.isStockQuantityPresent()) existing.setStockQuantity(update.getStockQuantity());
-        if (update.getDiscountPercent() != null) existing.setDiscountPercent(update.getDiscountPercent());
+        if (update.getDiscountPrice() != null) existing.setDiscountPrice(update.getDiscountPrice());
 
         return productRepository.save(existing);
     }

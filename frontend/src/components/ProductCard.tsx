@@ -19,7 +19,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
         />
         {product.onSale && (
           <span className="absolute left-2 top-2 rounded bg-red-500 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-white">
-            -{product.discountPercent}%
+            ${product.effectivePrice.toFixed(2)}
           </span>
         )}
       </div>

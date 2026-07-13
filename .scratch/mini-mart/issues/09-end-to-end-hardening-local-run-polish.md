@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: resolved
 
 # End-to-end hardening and local run polish
 

@@ -11,7 +11,7 @@ const pantry = { id: 3, name: "Pantry", status: "ACTIVE" };
 const mockCategories = [beverages, snacks, pantry];
 
 const baseProduct = {
-  discountPercent: 0,
+  discountPrice: undefined,
   effectivePrice: 0,
   onSale: false,
 };
