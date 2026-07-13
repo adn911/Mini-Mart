@@ -9,3 +9,4 @@ frontend/dist/
 frontend/.vite/
 
 .DS_Store
+backend/uploads/products/
