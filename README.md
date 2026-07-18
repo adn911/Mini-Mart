@@ -39,11 +39,6 @@ npm run dev
 
 The frontend starts on `http://localhost:5173` and proxies `/api` calls to the backend.
 
-## Default Credentials
-
-- **Admin login:** `admin` / `admin123`
-- Login at `http://localhost:5173/admin`
-
 ## Seed Data
 
 On startup, the backend seeds:
