@@ -19,7 +19,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
         />
         {product.onSale && (
           <span className="absolute left-2 top-2 rounded bg-red-500 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-white">
-            ${product.effectivePrice.toFixed(2)}
+            -{product.discountPercent}%
           </span>
         )}
       </div>
@@ -39,11 +39,11 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
           <div className="flex items-baseline gap-1.5">
             {product.onSale ? (
               <>
-                <span className="text-lg font-semibold text-red-600">${product.effectivePrice.toFixed(2)}</span>
-                <span className="text-sm text-slate-400 line-through">${product.price.toFixed(2)}</span>
+                <span className="text-lg font-semibold text-red-600">TK {product.effectivePrice.toFixed(2)}</span>
+                <span className="text-sm text-slate-400 line-through">TK {product.price.toFixed(2)}</span>
               </>
             ) : (
-              <span className="text-lg font-semibold text-slate-900">${product.price.toFixed(2)}</span>
+              <span className="text-lg font-semibold text-slate-900">TK {product.price.toFixed(2)}</span>
             )}
           </div>
 

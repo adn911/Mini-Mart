@@ -31,7 +31,7 @@ public class Product {
 
     private int reservedQuantity;
 
-    private BigDecimal discountPrice;
+    private Integer discountPercent;
 
     private String imageUrl;
 
@@ -64,20 +64,21 @@ public class Product {
     public int getReservedQuantity() { return reservedQuantity; }
     public void setReservedQuantity(int reservedQuantity) { this.reservedQuantity = reservedQuantity; }
 
-    public BigDecimal getDiscountPrice() { return discountPrice; }
-    public void setDiscountPrice(BigDecimal discountPrice) { this.discountPrice = discountPrice; }
+    public Integer getDiscountPercent() { return discountPercent; }
+    public void setDiscountPercent(Integer discountPercent) { this.discountPercent = discountPercent; }
 
     @Transient
     public BigDecimal getEffectivePrice() {
-        if (discountPrice != null && discountPrice.compareTo(BigDecimal.ZERO) > 0) {
-            return price.subtract(discountPrice);
+        if (discountPercent != null && discountPercent > 0) {
+            BigDecimal multiplier = BigDecimal.valueOf(100 - discountPercent).divide(BigDecimal.valueOf(100));
+            return price.multiply(multiplier);
         }
         return price;
     }
 
     @Transient
     public boolean isOnSale() {
-        return discountPrice != null && discountPrice.compareTo(BigDecimal.ZERO) > 0;
+        return discountPercent != null && discountPercent > 0;
     }
 
     public String getImageUrl() { return imageUrl; }

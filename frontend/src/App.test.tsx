@@ -11,7 +11,7 @@ const pantry = { id: 3, name: "Pantry", status: "ACTIVE" };
 const mockCategories = [beverages, snacks, pantry];
 
 const baseProduct = {
-  discountPrice: undefined,
+  discountPercent: undefined,
   effectivePrice: 0,
   onSale: false,
 };
@@ -261,7 +261,7 @@ describe("Mini-Mart storefront", () => {
     const addButtons = screen.getAllByRole("button", { name: "Add to cart" });
     await userEvent.click(addButtons[0]);
 
-    expect(await screen.findByText("$4.99 each")).toBeInTheDocument();
+    expect(await screen.findByText("TK 4.99 each")).toBeInTheDocument();
   });
 
   test("updating cart item quantity", async () => {
@@ -270,12 +270,12 @@ describe("Mini-Mart storefront", () => {
 
     const addButtons = screen.getAllByRole("button", { name: "Add to cart" });
     await userEvent.click(addButtons[0]);
-    expect(await screen.findByText("$4.99 each")).toBeInTheDocument();
+    expect(await screen.findByText("TK 4.99 each")).toBeInTheDocument();
 
     const plusButton = screen.getByText("+");
     await userEvent.click(plusButton);
 
-    expect(await screen.findByText("$9.98")).toBeInTheDocument();
+    expect(await screen.findByText("TK 9.98")).toBeInTheDocument();
   });
 
   test("shows error on insufficient stock", async () => {
@@ -295,7 +295,7 @@ describe("Mini-Mart storefront", () => {
 
     const addButtons = screen.getAllByRole("button", { name: "Add to cart" });
     await userEvent.click(addButtons[0]);
-    expect(await screen.findByText("$4.99 each")).toBeInTheDocument();
+    expect(await screen.findByText("TK 4.99 each")).toBeInTheDocument();
 
     const removeButton = screen.getByText("Remove");
     await userEvent.click(removeButton);
@@ -390,7 +390,7 @@ describe("Mini-Mart storefront", () => {
     const addButtons = screen.getAllByRole("button", { name: "Add to cart" });
     await userEvent.click(addButtons[0]);
 
-    await screen.findByText("$4.99 each");
+    await screen.findByText("TK 4.99 each");
     expect(screen.getByText("Checkout")).toBeInTheDocument();
   });
 
@@ -400,7 +400,7 @@ describe("Mini-Mart storefront", () => {
 
     const addButtons = screen.getAllByRole("button", { name: "Add to cart" });
     await userEvent.click(addButtons[0]);
-    await screen.findByText("$4.99 each");
+    await screen.findByText("TK 4.99 each");
 
     await userEvent.click(screen.getByText("Checkout"));
 
@@ -433,7 +433,7 @@ describe("Mini-Mart storefront", () => {
 
     const addButtons = screen.getAllByRole("button", { name: "Add to cart" });
     await userEvent.click(addButtons[0]);
-    await screen.findByText("$4.99 each");
+    await screen.findByText("TK 4.99 each");
 
     await userEvent.click(screen.getByText("Checkout"));
 

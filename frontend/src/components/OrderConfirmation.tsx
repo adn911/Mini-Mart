@@ -187,13 +187,13 @@ export default function OrderConfirmation({
                       <div className="flex-1">
                         <p className="text-sm font-medium text-slate-900">{item.product.name}</p>
                         <p className="text-xs text-slate-400">
-                          Qty: {item.quantity} &times; ${item.unitPrice.toFixed(2)}
+                          Qty: {item.quantity} &times; TK {item.unitPrice.toFixed(2)}
                           {item.product.onSale && (
-                            <span className="ml-1 text-slate-300 line-through">${item.product.price.toFixed(2)}</span>
+                            <span className="ml-1 text-slate-300 line-through">TK {item.product.price.toFixed(2)}</span>
                           )}
                         </p>
                       </div>
-                      <p className="text-sm font-medium text-slate-900">${(item.quantity * item.unitPrice).toFixed(2)}</p>
+                      <p className="text-sm font-medium text-slate-900">TK {(item.quantity * item.unitPrice).toFixed(2)}</p>
                     </li>
                   ))}
               </ul>
@@ -209,7 +209,7 @@ export default function OrderConfirmation({
             <div className="px-6 py-4">
               <div className="flex items-center justify-between text-base font-semibold text-slate-900">
                 <span>Total</span>
-                <span>${order.total.toFixed(2)}</span>
+                <span>TK {order.total.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -262,9 +262,9 @@ export default function OrderConfirmation({
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-slate-900">{item.product.name}</p>
-                    <p className="text-xs text-slate-400">Qty: {item.quantity} &times; ${item.product.effectivePrice.toFixed(2)}</p>
+                    <p className="text-xs text-slate-400">Qty: {item.quantity} &times; TK {item.product.effectivePrice.toFixed(2)}</p>
                   </div>
-                  <p className="text-sm font-medium text-slate-900">${(item.quantity * item.product.effectivePrice).toFixed(2)}</p>
+                  <p className="text-sm font-medium text-slate-900">TK {(item.quantity * item.product.effectivePrice).toFixed(2)}</p>
                 </li>
               ))}
             </ul>
@@ -280,7 +280,7 @@ export default function OrderConfirmation({
           <div className="px-6 py-4">
             <div className="flex items-center justify-between text-base font-semibold text-slate-900">
               <span>Total</span>
-              <span>${total.toFixed(2)}</span>
+              <span>TK {total.toFixed(2)}</span>
             </div>
           </div>
         </div>

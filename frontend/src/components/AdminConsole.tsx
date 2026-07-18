@@ -41,7 +41,7 @@ function ProductForm({
   const [name, setName] = useState(product?.name ?? "");
   const [description, setDescription] = useState(product?.description ?? "");
   const [price, setPrice] = useState(String(product?.price ?? ""));
-  const [discountPrice, setDiscountPrice] = useState(product?.discountPrice ? String(product.discountPrice) : "");
+  const [discountPercent, setDiscountPercent] = useState(product?.discountPercent ? String(product.discountPercent) : "");
   const [stockQuantity, setStockQuantity] = useState(String(product?.stockQuantity ?? ""));
   const [categoryId, setCategoryId] = useState(String(product?.category?.id ?? ""));
   const [saving, setSaving] = useState(false);
@@ -56,7 +56,7 @@ function ProductForm({
       name,
       description,
       price: parseFloat(price),
-      discountPrice: discountPrice ? parseFloat(discountPrice) : undefined,
+      discountPercent: discountPercent ? parseInt(discountPercent) : undefined,
       stockQuantity: parseInt(stockQuantity) || 0,
       category: categoryId ? { id: parseInt(categoryId) } as Category : undefined,
     });
@@ -103,8 +103,8 @@ function ProductForm({
             className="w-full border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none" />
         </div>
         <div className="flex-1">
-          <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-slate-500">Discount $</label>
-          <input type="number" min="0" step="0.01" value={discountPrice} onChange={(e) => setDiscountPrice(e.target.value)}
+          <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-slate-500">Discount %</label>
+          <input type="number" min="0" max="100" step="1" value={discountPercent} onChange={(e) => setDiscountPercent(e.target.value)}
             className="w-full border border-slate-200 px-3 py-2 text-sm focus:border-slate-400 focus:outline-none" />
         </div>
       </div>
@@ -452,8 +452,8 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
                             </td>
                             <td className="py-3 pr-4 font-medium">{p.name}</td>
                             <td className="py-3 pr-4 text-slate-500">{p.category?.name ?? "—"}</td>
-                            <td className="py-3 pr-4">${p.price.toFixed(2)}</td>
-                            <td className="py-3 pr-4 text-xs text-slate-500">{p.onSale ? `-$${p.discountPrice?.toFixed(2)}` : "—"}</td>
+                            <td className="py-3 pr-4">TK {p.price.toFixed(2)}</td>
+                            <td className="py-3 pr-4 text-xs text-slate-500">{p.onSale ? `-${p.discountPercent}%` : "—"}</td>
                             <td className={`py-3 pr-4 ${p.availableQuantity < LOW_STOCK_THRESHOLD ? "text-amber-600" : ""}`}>
                               {p.stockQuantity}
                               {p.availableQuantity < LOW_STOCK_THRESHOLD && p.status === "ACTIVE" && (
@@ -657,7 +657,7 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
                           <span className="text-xs uppercase tracking-wider text-slate-500">{o.status}</span>
                         </td>
                         <td className="py-3 pr-4 text-slate-500 text-xs">{(o.paymentMethod ?? "CASH_ON_DELIVERY").replace(/_/g, " ")}</td>
-                        <td className="py-3 pr-4">${o.total.toFixed(2)}</td>
+                        <td className="py-3 pr-4">TK {o.total.toFixed(2)}</td>
                         <td className="py-3 pr-4 text-slate-500">{o.items.length}</td>
                         <td className="py-3 text-slate-500 text-xs">{new Date(o.createdAt).toLocaleString()}</td>
                         <td className="py-3 pl-4">
@@ -728,9 +728,9 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-900 truncate">{item.product.name}</p>
-                        <p className="text-xs text-slate-400">{item.quantity} &times; ${item.unitPrice.toFixed(2)}</p>
+                        <p className="text-xs text-slate-400">{item.quantity} &times; TK {item.unitPrice.toFixed(2)}</p>
                       </div>
-                      <p className="text-sm font-medium text-slate-900">${(item.quantity * item.unitPrice).toFixed(2)}</p>
+                      <p className="text-sm font-medium text-slate-900">TK {(item.quantity * item.unitPrice).toFixed(2)}</p>
                     </li>
                   ))}
                 </ul>
@@ -738,7 +738,7 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
 
               <div className="flex items-center justify-between border-t border-slate-200 pt-4 text-base font-semibold text-slate-900">
                 <span>Total</span>
-                <span>${reviewOrder.total.toFixed(2)}</span>
+                <span>TK {reviewOrder.total.toFixed(2)}</span>
               </div>
             </div>
 
