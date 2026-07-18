@@ -63,6 +63,7 @@ function Storefront() {
     firstName: "", lastName: "", addressLine: "", city: "", zipCode: "", phone1: "", phone2: "",
   });
   const [cartExpired, setCartExpired] = useState(false);
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
 
   function refreshCart() {
     getCart()
@@ -153,6 +154,8 @@ function Storefront() {
     refreshCart();
   }
 
+  const VISIBLE_CATEGORIES = 6;
+
   if (confirmingOrder) {
     const total = confirmingOrder.reduce(
       (sum, item) => sum + item.product.price * item.quantity,
@@ -232,7 +235,7 @@ function Storefront() {
             />
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap items-center">
             <button
               onClick={() => { setSelectedCategoryId(undefined); setPage(0); }}
               className={`px-3 py-2 text-xs font-medium uppercase tracking-wider transition-colors ${
@@ -243,7 +246,7 @@ function Storefront() {
             >
               All
             </button>
-            {categories.map((cat) => (
+            {categories.slice(0, VISIBLE_CATEGORIES).map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => { setSelectedCategoryId(cat.id); setPage(0); }}
@@ -256,6 +259,34 @@ function Storefront() {
                 {cat.name}
               </button>
             ))}
+            {categories.length > VISIBLE_CATEGORIES && (
+              <div className="relative">
+                <button
+                  onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+                  className="px-3 py-2 text-xs font-medium uppercase tracking-wider transition-colors border border-slate-200 text-slate-600 hover:border-slate-400"
+                >
+                  More...
+                </button>
+                {categoryDropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setCategoryDropdownOpen(false)} />
+                    <div className="absolute right-0 top-full z-20 mt-1 w-48 border border-slate-200 bg-white shadow-lg">
+                      {categories.slice(VISIBLE_CATEGORIES).map((cat) => (
+                        <button
+                          key={cat.id}
+                          onClick={() => { setSelectedCategoryId(cat.id); setPage(0); setCategoryDropdownOpen(false); }}
+                          className={`block w-full px-3 py-2 text-left text-xs font-medium uppercase tracking-wider transition-colors ${
+                            selectedCategoryId === cat.id ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50"
+                          }`}
+                        >
+                          {cat.name}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
