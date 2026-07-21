@@ -136,7 +136,7 @@ function ProductForm({
                 <input type="file" accept="image/jpeg,image/png,image/webp"
                   onChange={handleUpload} className="hidden" disabled={uploading} />
               </label>
-              {uploadError && <p className="text-xs text-red-500">{uploadError}</p>}
+              {uploadError && <p className="text-xs text-rose-500">{uploadError}</p>}
             </div>
           </div>
         </div>
@@ -380,7 +380,7 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
 
       <div className="mx-auto max-w-6xl px-6 py-4">
         {error && (
-          <div className="mb-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
+          <div className="mb-4 rounded border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-600">
             {error}
           </div>
         )}
@@ -620,7 +620,7 @@ export default function AdminConsole({ onLogout }: AdminConsoleProps) {
             </div>
 
             {orderActionError && (
-              <div className="mb-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
+              <div className="mb-4 rounded border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-600">
                 {orderActionError}
               </div>
             )}

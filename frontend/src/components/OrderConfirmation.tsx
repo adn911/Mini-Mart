@@ -35,6 +35,11 @@ const fieldLabels: Record<keyof ShippingAddress, string> = {
   city: "City", zipCode: "Zip Code", phone1: "Phone", phone2: "Phone 2",
 };
 
+function calcDeliveryCharge(city: string | undefined): number {
+  const c = (city ?? "").trim().toLowerCase();
+  return c === "dhaka" ? 60 : 100;
+}
+
 function validateAddress(address: ShippingAddress): FieldErrors {
   const errors: FieldErrors = {};
   for (const f of requiredFields) {
@@ -87,7 +92,7 @@ function AddressForm({
               <div key={f.key} className={f.key === "addressLine" ? "sm:col-span-2" : ""}>
                 <div className="mb-1 flex items-center gap-0.5">
                   <label htmlFor={f.key} className="text-xs font-medium text-slate-500">{f.label}</label>
-                  {requiredFields.includes(f.key) && <span className="text-red-500">*</span>}
+                  {requiredFields.includes(f.key) ? <span className="text-rose-400">*</span> : <span className="text-rose-400 invisible">*</span>}
                 </div>
                 {f.key === "city" ? (
                   <select
@@ -95,7 +100,7 @@ function AddressForm({
                     value={address[f.key]}
                     onChange={(e) => set(f.key, e.target.value)}
                     className={`w-full border px-3 py-2 text-sm focus:outline-none ${
-                      err ? "border-red-400 focus:border-red-500" : "border-slate-200 focus:border-slate-400"
+                      "border-slate-200 focus:border-slate-400"
                     }`}
                   >
                     <option value="">Select a district</option>
@@ -111,11 +116,11 @@ function AddressForm({
                     onChange={(e) => set(f.key, e.target.value)}
                     placeholder={f.key === "phone1" || f.key === "phone2" ? "017xxxxxxxx" : undefined}
                     className={`w-full border px-3 py-2 text-sm focus:outline-none ${
-                      err ? "border-red-400 focus:border-red-500" : "border-slate-200 focus:border-slate-400"
+                      "border-slate-200 focus:border-slate-400"
                     }`}
                   />
                 )}
-                {err && <p className="mt-1 text-xs text-red-500">{err}</p>}
+                {err && <p className="mt-1 text-xs text-slate-400">{err}</p>}
               </div>
             );
           })}
@@ -206,6 +211,15 @@ export default function OrderConfirmation({
               </div>
             </div>
 
+            {order.deliveryCharge > 0 && (
+              <div className="border-b border-slate-200 px-6 py-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-500">Delivery Charge</span>
+                  <span className="text-slate-900">TK {order.deliveryCharge.toFixed(2)}</span>
+                </div>
+              </div>
+            )}
+
             <div className="px-6 py-4">
               <div className="flex items-center justify-between text-base font-semibold text-slate-900">
                 <span>Total</span>
@@ -277,10 +291,19 @@ export default function OrderConfirmation({
             </div>
           </div>
 
+          {shippingAddress?.city && (
+            <div className="border-b border-slate-200 px-6 py-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-500">Delivery Charge</span>
+                <span className="text-slate-900">TK {calcDeliveryCharge(shippingAddress.city).toFixed(2)}</span>
+              </div>
+            </div>
+          )}
+
           <div className="px-6 py-4">
             <div className="flex items-center justify-between text-base font-semibold text-slate-900">
               <span>Total</span>
-              <span>TK {total.toFixed(2)}</span>
+              <span>TK {(total + (shippingAddress?.city ? calcDeliveryCharge(shippingAddress.city) : 0)).toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -291,7 +314,7 @@ export default function OrderConfirmation({
       </div>
 
       {error && (
-        <div className="mt-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
+        <div className="mt-4 rounded border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-600">
           {error}
         </div>
       )}

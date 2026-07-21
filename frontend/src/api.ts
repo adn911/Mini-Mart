@@ -289,6 +289,7 @@ export type OrderResponse = {
   sessionId?: string;
   items: OrderItemResponse[];
   total: number;
+  deliveryCharge: number;
   status: string;
   paymentMethod?: string;
   firstName?: string;

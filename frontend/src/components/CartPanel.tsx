@@ -65,7 +65,7 @@ export default function CartPanel({
           </div>
         )}
         {error && !expired && (
-          <div className="mx-4 mt-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
+          <div className="mx-4 mt-2 rounded border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-600">
             {error}
           </div>
         )}

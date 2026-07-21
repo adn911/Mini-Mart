@@ -36,6 +36,8 @@ public class CustomerOrder {
 
     private BigDecimal total;
 
+    private BigDecimal deliveryCharge = BigDecimal.ZERO;
+
     private Instant createdAt = Instant.now();
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -72,6 +74,9 @@ public class CustomerOrder {
 
     public BigDecimal getTotal() { return total; }
     public void setTotal(BigDecimal total) { this.total = total; }
+
+    public BigDecimal getDeliveryCharge() { return deliveryCharge; }
+    public void setDeliveryCharge(BigDecimal deliveryCharge) { this.deliveryCharge = deliveryCharge; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

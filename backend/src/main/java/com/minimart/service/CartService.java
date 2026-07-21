@@ -199,6 +199,13 @@ public class CartService {
             order.setPhone2(shipping.phone2());
         }
 
+        BigDecimal deliveryCharge = BigDecimal.ZERO;
+        if ("CASH_ON_DELIVERY".equals(paymentMethod) && shipping != null) {
+            String city = shipping.city() != null ? shipping.city().trim().toLowerCase() : "";
+            deliveryCharge = city.equals("dhaka") ? BigDecimal.valueOf(60) : BigDecimal.valueOf(100);
+        }
+        order.setDeliveryCharge(deliveryCharge);
+
         BigDecimal total = BigDecimal.ZERO;
 
         for (CartItem item : cartItems) {
@@ -218,7 +225,7 @@ public class CartService {
             total = total.add(unitPrice.multiply(BigDecimal.valueOf(item.getQuantity())));
         }
 
-        order.setTotal(total);
+        order.setTotal(total.add(deliveryCharge));
 
         cart.setStatus(CartStatus.CHECKED_OUT);
         cartRepository.save(cart);

@@ -62,7 +62,7 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
         </div>
 
         {error && (
-          <p className="mb-4 text-sm text-red-600">{error}</p>
+          <p className="mb-4 text-sm text-rose-600">{error}</p>
         )}
 
         <button
